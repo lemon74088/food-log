@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>食物紀錄</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:#f6f6f4;color:#1a202c;font:16px/1.55 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+.app{max-width:560px;margin:0 auto;background:#fff;min-height:100vh;display:flex;flex-direction:column;box-shadow:0 0 0 1px #ecebe7}
+.appbar{position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid #ecebe7;padding:11px 16px 9px}
+.appbar h1{margin:0;font-size:19px;font-weight:700;letter-spacing:.02em}
+.appbar .sub{margin:2px 0 0;font-size:12.5px;color:#7c8894}
+main{flex:1}
+.view{display:none;padding:14px 16px 96px}
+.view.on{display:block}
+
+/* 日期列 */
+.daterow{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.daterow .mid{flex:1;text-align:center}
+.daterow .day{font-size:17px;font-weight:700}
+.daterow .date{font-size:12.5px;color:#7c8894;margin-top:1px}
+.iconbtn{width:44px;height:44px;border-radius:10px;border:1px solid #e4e3de;background:#fff;font-size:18px;color:#3d4854;cursor:pointer}
+.iconbtn:active{background:#f2f2ee}
+
+/* 輸入區 */
+.composer{border:1px solid #e4e3de;border-radius:12px;padding:10px 11px 11px;background:#fdfdfc}
+.composer textarea{width:100%;border:0;background:transparent;resize:none;font:inherit;font-size:15.5px;line-height:1.5;outline:none;min-height:52px;color:#1a202c}
+.composer textarea::placeholder{color:#a3adb8}
+.crow{display:flex;align-items:center;gap:8px;margin-top:6px}
+.crow .spacer{flex:1}
+.chipbtn{border:1px solid #e4e3de;background:#fff;border-radius:9px;padding:8px 11px;font-size:13.5px;color:#3d4854;cursor:pointer;display:inline-flex;align-items:center;gap:5px;min-height:38px}
+.chipbtn.attached{border-color:#0f766e;color:#0f766e;background:#eef6f4}
+.primary{border:0;background:#0f766e;color:#fff;border-radius:9px;padding:10px 20px;font-size:15px;font-weight:600;cursor:pointer;min-height:42px}
+.primary:disabled{background:#c8cfd6;cursor:default}
+.primary:active{background:#0b5f59}
+.ghost{border:1px solid #d9d8d2;background:#fff;border-radius:9px;padding:9px 14px;font-size:14px;color:#3d4854;cursor:pointer;min-height:40px}
+.hint{font-size:12px;color:#7c8894}
+
+/* 常用 */
+.freq{margin:12px 0 4px}
+.freq .lbl{font-size:12px;color:#8b95a1;margin-bottom:7px}
+.freq .row{display:flex;flex-wrap:wrap;gap:7px}
+.fchip{border:1px solid #e4e3de;background:#fafaf8;border-radius:999px;padding:6px 12px;font-size:13.5px;color:#4b5563;cursor:pointer}
+.fchip:active{background:#eef6f4;border-color:#0f766e}
+
+/* 清單 */
+.mealgroup{margin-top:16px}
+.mealgroup .gtitle{font-size:12px;letter-spacing:.1em;color:#8b95a1;font-weight:600;margin-bottom:7px}
+.card{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #ecebe7;border-radius:11px;background:#fff;margin-bottom:9px}
+.card .cardmain{flex:1;min-width:0}
+.card .meta{display:flex;align-items:center;gap:8px}
+.card .time{font-variant-numeric:tabular-nums;font-size:13px;color:#7c8894;font-weight:600}
+.card .meal{font-size:11.5px;color:#0f766e;background:#eef6f4;border-radius:5px;padding:2px 7px}
+.card .text{font-size:15.5px;margin-top:5px;word-break:break-word}
+.card .note{font-size:13px;color:#6b7280;margin-top:5px;border-left:2px solid #ecebe7;padding-left:8px}
+.card .syms{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.sym{font-size:11.5px;background:#fdf1e3;color:#8a4b08;border-radius:5px;padding:2px 7px}
+.thumb{width:64px;height:64px;object-fit:cover;border-radius:9px;flex:0 0 auto;background:#f2f2ee}
+.thumb.big{width:96px;height:96px}
+.text.muted{color:#8b95a1;font-style:italic}
+.cardfoot{flex:0 0 auto;display:flex;flex-direction:column;gap:2px}
+.link{border:0;background:none;padding:3px 4px;font-size:12px;color:#7c8894;cursor:pointer;text-align:right}
+.link.danger{color:#b5473f}
+.editbox{width:100%;border-top:1px dashed #ecebe7;margin-top:10px;padding-top:10px;display:none}
+.editbox.on{display:block}
+.editrow{display:flex;gap:8px;margin-bottom:8px}
+.editrow input,.editrow select,.editrow textarea{font:inherit;font-size:14px;border:1px solid #e4e3de;border-radius:8px;padding:8px 9px;background:#fff;color:#1a202c;outline:none}
+.editrow input[type=time]{width:112px}
+.editrow select{flex:1}
+.editrow textarea{flex:1;resize:vertical;min-height:56px}
+.symtoggle{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 9px}
+.symtoggle button{border:1px solid #e4e3de;background:#fafaf8;border-radius:999px;padding:6px 11px;font-size:12.5px;color:#4b5563;cursor:pointer}
+.symtoggle button.sel{background:#fdf1e3;border-color:#c98a3c;color:#8a4b08}
+.empty{padding:34px 10px;text-align:center;color:#98a2ae;font-size:14px;line-height:1.8}
+
+/* 日曆 */
+.calbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.calbar .t{flex:1;text-align:center;font-size:16px;font-weight:700}
+.wd{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px}
+.wd span{text-align:center;font-size:11.5px;color:#98a2ae}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cell{aspect-ratio:1/1;border:0;background:#fafaf8;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;color:#3d4854;cursor:pointer;padding:0}
+.cell.blank{background:transparent;cursor:default}
+.cell.has{background:#eef6f4;color:#0b5f59;font-weight:600}
+.cell.today{outline:2px solid #0f766e;outline-offset:-2px}
+.cell .dot{width:5px;height:5px;border-radius:50%;background:#0f766e}
+.cell.sel{background:#0f766e;color:#fff}
+.cell.sel .dot{background:#fff}
+.calsum{margin-top:14px;font-size:13.5px;color:#4b5563;line-height:1.9}
+.calsum b{color:#0f766e}
+
+/* 統計 */
+.rangerow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.rchip{border:1px solid #e4e3de;background:#fff;border-radius:999px;padding:8px 14px;font-size:13.5px;color:#4b5563;cursor:pointer;min-height:38px}
+.rchip.on{background:#0f766e;border-color:#0f766e;color:#fff}
+.customrange{display:none;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.customrange.on{display:flex}
+.customrange input{font:inherit;font-size:13.5px;border:1px solid #e4e3de;border-radius:8px;padding:7px 8px;color:#1a202c}
+.period{font-size:12.5px;color:#7c8894;margin-bottom:12px}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:16px}
+.tile{border:1px solid #ecebe7;border-radius:11px;padding:11px 12px;background:#fff}
+.tile .k{font-size:11.5px;color:#8b95a1}
+.tile .v{font-size:21px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile .s{font-size:11.5px;color:#7c8894;margin-top:1px}
+.sec{margin-top:18px}
+.sec h3{margin:0 0 9px;font-size:13px;letter-spacing:.06em;color:#3d4854}
+.rank{list-style:none;margin:0;padding:0}
+.rank li{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f2f2ee;font-size:14px}
+.rank li .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank li .c{font-size:12.5px;color:#7c8894;font-variant-numeric:tabular-nums}
+.rank li .bar{height:4px;border-radius:2px;background:#0f766e;flex:0 0 auto}
+.miss{font-size:13px;color:#8a4b08;line-height:1.8}
+.hours{display:flex;gap:2px;margin-top:8px}
+.hours i{flex:1;height:26px;background:#f2f2ee;border-radius:3px;position:relative}
+.hours i b{position:absolute;left:0;right:0;bottom:0;background:#0f766e;border-radius:3px}
+.axisline{display:flex;justify-content:space-between;font-size:11px;color:#98a2ae;margin-top:4px}
+
+/* 報告 */
+.opts{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;font-size:13.5px;color:#4b5563}
+.opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.opts input{width:17px;height:17px;accent-color:#0f766e}
+.sheet{border:1px solid #ecebe7;border-radius:11px;padding:14px;background:#fff;margin-top:12px}
+.sheet h2{margin:0;font-size:17px}
+.sheet .range{font-size:12.5px;color:#7c8894;margin:3px 0 12px}
+.dayblk{margin-top:14px;border-top:1px solid #f2f2ee;padding-top:10px}
+.dayblk h4{margin:0 0 8px;font-size:14px;color:#0f766e}
+.mline{display:flex;gap:8px;padding:5px 0;font-size:13.5px;align-items:flex-start}
+.mline .t{color:#7c8894;font-variant-numeric:tabular-nums;flex:0 0 44px;font-size:12.5px}
+.mline .b{flex:1;min-width:0}
+.mline .m{font-size:11px;color:#0f766e;border:1px solid #cfe0dc;border-radius:4px;padding:0 5px;flex:0 0 auto;align-self:flex-start;margin-top:1px}
+.rphoto{width:100%;max-width:260px;border-radius:8px;margin:6px 0}
+.rsum{font-size:12.5px;line-height:1.85;color:#4b5563;background:#fafaf8;border:1px solid #ecebe7;border-radius:8px;padding:10px 11px;margin-bottom:6px}
+.rsum b{color:#0f766e}
+.rempty{padding:26px;text-align:center;color:#98a2ae;font-size:13.5px}
+
+/* 設定 */
+.setbtn{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:1px solid #ecebe7;background:#fff;border-radius:11px;padding:14px;font:inherit;font-size:14.5px;color:#1a202c;cursor:pointer;margin-bottom:9px}
+.setbtn span.k{color:#7c8894;font-size:12.5px}
+.dangerbtn{color:#b5473f;border-color:#f0dcd9}
+.info{font-size:12.5px;color:#7c8894;line-height:1.8;margin-top:14px}
+
+/* 底部導覽 */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;background:#fff;border-top:1px solid #ecebe7;padding-bottom:env(safe-area-inset-bottom);max-width:560px;margin:0 auto}
+.tabbar button{flex:1;border:0;background:none;padding:9px 0 10px;font:inherit;font-size:12.5px;color:#98a2ae;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabbar button .ic{font-size:16px;line-height:1}
+.tabbar button.on{color:#0f766e;font-weight:700}
+
+.demobar{background:#fdf6ec;color:#8a4b08;font-size:12.5px;text-align:center;padding:7px 12px;border-bottom:1px solid #eddcbf;line-height:1.5}
+/* toast */
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);background:#232a33;color:#fff;border-radius:10px;padding:11px 14px;font-size:13.5px;display:flex;gap:14px;align-items:center;opacity:0;pointer-events:none;transition:.18s;z-index:20;max-width:92vw}.toast.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.toast button{border:0;background:none;color:#8fd3cb;font:inherit;font-weight:700;cursor:pointer;padding:0}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  .app{max-width:none;box-shadow:none}
+  .appbar,.tabbar,.toast,.no-print{display:none!important}
+  .view{display:none!important;padding:0}
+  #v-report{display:block!important;padding:0}
+  .sheet{border:0;padding:0}
+  .rphoto{max-width:70mm}
+  .card,.tile{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="appbar">
+    <h1>食物紀錄</h1>
+    <p class="sub" id="subline">記錄吃什麼、什麼時候吃，一段期間整理成報告</p>
+  </header>
+  <div class="demobar" id="demobar" hidden>示範模式 · 可以隨意點，重新整理就還原，不會動到你的紀錄</div>
+
+  <main>
+    <!-- 今天 -->
+    <section class="view on" id="v-today">
+      <div class="daterow">
+        <button class="iconbtn" id="prevDay" aria-label="前一天">‹</button>
+        <div class="mid">
+          <div class="day" id="dayLabel">今天</div>
+          <div class="date" id="dateLabel"></div>
+        </div>
+        <button class="iconbtn" id="nextDay" aria-label="後一天">›</button>
+      </div>
+
+      <div class="composer">
+        <textarea id="quickText" rows="2" placeholder="吃了什麼？例如：蛋餅加豆漿"></textarea>
+        <div class="crow">
+          <button class="chipbtn" id="photoBtn">＋ 照片</button>
+          <span class="hint" id="photoHint"></span>
+          <span class="spacer"></span>
+          <button class="primary" id="addBtn">記錄</button>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" hidden>
+      </div>
+
+      <div class="freq" id="freqWrap" hidden>
+        <div class="lbl">最近常吃</div>
+        <div class="row" id="freqRow"></div>
+      </div>
+
+      <div id="entryList"></div>
+    </section>
+
+    <!-- 日曆 -->
+    <section class="view" id="v-calendar">
+      <div class="calbar">
+        <button class="iconbtn" id="calPrev" aria-label="上個月">‹</button>
+        <div class="t" id="calTitle"></div>
+        <button class="iconbtn" id="calNext" aria-label="下個月">›</button>
+      </div>
+      <div class="wd"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+      <div class="grid" id="calGrid"></div>
+      <div class="calsum" id="calSum"></div>
+    </section>
+
+    <!-- 統計 -->
+    <section class="view" id="v-stats">
+      <div class="rangerow" id="rangeRow">
+        <button class="rchip" data-range="7">最近 7 天</button>
+        <button class="rchip on" data-range="30">最近 30 天</button>
+        <button class="rchip" data-range="month">本月</button>
+        <button class="rchip" data-range="lastmonth">上月</button>
+        <button class="rchip" data-range="custom">自訂</button>
+      </div>
+      <div class="customrange" id="customRange">
+        <input type="date" id="fromDate">
+        <span style="color:#98a2ae">到</span>
+        <input type="date" id="toDate">
+        <button class="ghost" id="applyRange">套用</button>
+      </div>
+      <div class="period" id="periodLine"></div>
+
+      <div class="tiles" id="statTiles"></div>
+
+      <div class="sec">
+        <h3>記錄完整度</h3>
+        <div id="completeness"></div>
+      </div>
+
+      <div class="sec">
+        <h3>最常出現</h3>
+        <ul class="rank" id="rankList"></ul>
+      </div>
+
+      <div class="sec">
+        <h3>進食時間分布</h3>
+        <div class="hours" id="hourBars"></div>
+        <div class="axisline"><span>0</span><span>6</span><span>12</span><span>18</span><span>23</span></div>
+        <div class="hint" id="timeLine" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+    <!-- 報告 -->
+    <section class="view" id="v-report">
+      <div class="rangerow no-print" id="repRangeRow">
+        <button class="rchip" data-range="7">最近 7 天</button>
+        <button class="rchip on" data-range="30">最近 30 天</button>
+        <button class="rchip" data-range="month">本月</button>
+        <button class="rchip" data-range="lastmonth">上月</button>
+        <button class="rchip" data-range="custom">自訂</button>
+      </div>
+      <div class="customrange no-print" id="repCustomRange">
+        <input type="date" id="repFrom">
+        <span style="color:#98a2ae">到</span>
+        <input type="date" id="repTo">
+        <button class="ghost" id="repApply">套用</button>
+      </div>
+      <div class="opts no-print">
+        <label><input type="checkbox" id="optTime" checked>時間</label>
+        <label><input type="checkbox" id="optPhoto" checked>照片</label>
+        <label><input type="checkbox" id="optSym" checked>症狀</label>
+        <label><input type="checkbox" id="optNote" checked>備註</label>
+      </div>
+      <button class="primary no-print" id="printBtn" style="width:100%;margin-bottom:6px">列印 / 存成 PDF</button>
+      <div class="hint no-print" style="text-align:center;margin-bottom:10px">在列印對話框選「另存為 PDF」即可</div>
+      <div class="sheet" id="reportSheet"></div>
+    </section>
+
+    <!-- 設定 -->
+    <section class="view" id="v-settings">
+      <button class="setbtn" id="exportBtn">匯出備份 <span class="k">JSON</span></button>
+      <button class="setbtn" id="importBtn">匯入備份 <span class="k">合併資料</span></button>
+      <input type="file" id="importInput" accept="application/json" hidden>
+      <button class="setbtn" id="storageBtn">本機儲存空間 <span class="k" id="storageLine">查看</span></button>
+      <button class="setbtn" id="demoBtn">載入範例資料 <span class="k">測試用</span></button>
+      <button class="setbtn dangerbtn" id="clearBtn">清空所有紀錄 <span class="k">不可復原</span></button>
+      <div class="info">
+        資料只存在這台裝置的瀏覽器裡（IndexedDB），不會上傳。<br>
+        換裝置、換網址、清瀏覽器資料都會看不到舊紀錄，所以請定期用「匯出備份」。<br><br>
+        目前版本：v0.1 工程版（介面為中性樣式，視覺方向尚未定案）
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <button class="on" data-view="today"><span class="ic">◉</span>今天</button>
+  <button data-view="calendar"><span class="ic">▤</span>日曆</button>
+  <button data-view="stats"><span class="ic">◫</span>統計</button>
+  <button data-view="report"><span class="ic">▣</span>報告</button>
+  <button data-view="settings"><span class="ic">⚙</span>設定</button>
+</nav>
+
+<div class="toast" id="toast"><span id="toastText"></span><button id="toastAct" hidden></button></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- 基本工具 ---------- */
+var $ = function(s,r){ return (r||document).querySelector(s); };
+var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+var MEALS = ["早餐","午餐","點心","晚餐","宵夜"];
+var SYMPTOMS = ["脹氣","腹瀉","胃痛","疲倦","過敏","頭暈"];
+
+function pad(n){ return String(n).padStart(2,"0"); }
+function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function todayStr(){ return ymd(new Date()); }
+function parseYmd(s){ var p=s.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function addDays(s,n){ var d=parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); }
+function diffDays(a,b){ return Math.round((parseYmd(b)-parseYmd(a))/86400000); }
+function niceDate(s){ var d=parseYmd(s); return d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日 星期"+"日一二三四五六"[d.getDay()]; }
+function shortDate(s){ var d=parseYmd(s); return (d.getMonth()+1)+"/"+d.getDate(); }
+function nowTime(){ var d=new Date(); return pad(d.getHours())+":"+pad(d.getMinutes()); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function uid(){ return (crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36)+Math.random().toString(36).slice(2,8)); }
+function mealFromTime(t){
+  var h = parseInt(String(t).slice(0,2),10);
+  if(h>=5 && h<11) return "早餐";
+  if(h>=11 && h<15) return "午餐";
+  if(h>=15 && h<17) return "點心";
+  if(h>=17 && h<21) return "晚餐";
+  return "宵夜";
+}
+
+/* ---------- 資料層 ---------- */
+var DB_NAME="foodlog-db", STORE="entries", db=null, entries=[], selectedDate=todayStr(), pendingPhoto=null;
+var DEMO = /[?&]demo=1/.test(location.search);
+
+function openDB(){
+  return new Promise(function(res,rej){
+    var req = indexedDB.open(DB_NAME,1);
+    req.onupgradeneeded = function(){
+      var d = req.result;
+      if(!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:"id"});
+    };
+    req.onsuccess = function(){ res(req.result); };
+    req.onerror = function(){ rej(req.error); };
+  });
+}
+function store(mode){ return db.transaction(STORE,mode).objectStore(STORE); }
+function dbAll(){ return new Promise(function(res,rej){ var r=store("readonly").getAll(); r.onsuccess=function(){res(r.result||[]);}; r.onerror=function(){rej(r.error);}; }); }
+function dbPut(o){ if(DEMO) return Promise.resolve(); return new Promise(function(res,rej){ var r=store("readwrite").put(o); r.onsuccess=function(){res();}; r.onerror=function(){rej(r.error);}; }); }
+function dbDel(id){ if(DEMO) return Promise.resolve(); return new Promise(function(res,rej){ var r=store("readwrite").delete(id); r.onsuccess=function(){res();}; r.onerror=function(){rej(r.error);}; }); }
+
+/* ---------- 狀態 ---------- */
+var view="today", rangeMode="30", customFrom=addDays(todayStr(),-29), customTo=todayStr();
+var calY=new Date().getFullYear(), calM=new Date().getMonth();
+var lastDeleted=null;
+
+/* ---------- 畫面切換 ---------- */
+function setView(v){
+  view=v;
+  $$(".view").forEach(function(el){ el.classList.toggle("on", el.id==="v-"+v); });
+  $$("#tabbar button").forEach(function(b){ b.classList.toggle("on", b.dataset.view===v); });
+  if(v==="calendar") renderCalendar();
+  if(v==="stats") renderStats();
+  if(v==="report") renderReport();
+  window.scrollTo(0,0);
+}
+
+/* ---------- 今天 ---------- */
+function renderToday(){
+  var isToday = selectedDate===todayStr();
+  $("#dayLabel").textContent = isToday ? "今天" : (selectedDate===addDays(todayStr(),-1) ? "昨天" : niceDate(selectedDate).replace(/ \S+$/,""));
+  $("#dateLabel").textContent = niceDate(selectedDate);
+
+  var list = entries.filter(function(e){ return e.date===selectedDate; })
+                   .sort(function(a,b){ return a.time.localeCompare(b.time); });
+  var wrap = $("#entryList");
+  if(!list.length){
+    wrap.innerHTML = '<div class="empty">這天還沒有紀錄。<br>在上面打一句話就能開始。</div>';
+    return;
+  }
+  var html="";
+  MEALS.forEach(function(m){
+    var g = list.filter(function(e){ return e.meal===m; });
+    if(!g.length) return;
+    html += '<div class="mealgroup"><div class="gtitle">'+m+'</div>'+g.map(cardHTML).join("")+'</div>';
+  });
+  var other = list.filter(function(e){ return MEALS.indexOf(e.meal)<0; });
+  if(other.length) html += '<div class="mealgroup"><div class="gtitle">其他</div>'+other.map(cardHTML).join("")+'</div>';
+  wrap.innerHTML = html;
+}
+
+function cardHTML(e){
+  var syms = (e.symptoms&&e.symptoms.length) ? '<div class="syms">'+e.symptoms.map(function(s){return '<span class="sym">'+esc(s)+'</span>';}).join("")+'</div>' : "";
+  var photo = e.photo ? '<img class="thumb'+(e.text?"":" big")+'" src="'+e.photo+'" alt="餐點照片">' : "";
+  var note = e.note ? '<div class="note">'+esc(e.note)+'</div>' : "";
+  var symOpts = SYMPTOMS.map(function(s){
+    var on = (e.symptoms||[]).indexOf(s)>=0;
+    return '<button type="button" data-sym="'+esc(s)+'" class="'+(on?"sel":"")+'">'+esc(s)+'</button>';
+  }).join("");
+  var mealOpts = MEALS.map(function(m){ return '<option value="'+m+'"'+(m===e.meal?" selected":"")+'>'+m+'</option>'; }).join("");
+
+  return '<article class="card" data-id="'+e.id+'">'+
+    '<div class="cardmain">'+
+      '<div class="meta"><span class="time">'+e.time+'</span><span class="meal">'+e.meal+'</span></div>'+
+      (e.text ? '<div class="text">'+esc(e.text)+'</div>' : '<div class="text muted">只有照片，還沒有文字</div>')+ syms + note +
+    '</div>'+ photo +
+    '<div class="cardfoot no-print">'+
+      '<button class="link" data-act="edit">編輯</button>'+
+      '<button class="link danger" data-act="del">刪除</button>'+
+    '</div>'+
+    '<div class="editbox">'+
+      '<div class="editrow"><input type="time" data-f="time" value="'+e.time+'">'+
+        '<select data-f="meal">'+mealOpts+'</select></div>'+
+      '<div class="editrow"><textarea data-f="text" placeholder="吃了什麼">'+esc(e.text)+'</textarea></div>'+
+      '<div class="symtoggle">'+symOpts+'</div>'+
+      '<div class="editrow"><textarea data-f="note" placeholder="備註（選填）">'+esc(e.note||"")+'</textarea></div>'+
+      '<div class="crow"><button class="ghost" data-act="cancel">取消</button><span class="spacer"></span><button class="primary" data-act="save">儲存</button></div>'+
+    '</div>'+
+  '</article>';
+}
+
+function renderFreq(){
+  var from = addDays(todayStr(),-30);
+  var counts = {};
+  entries.filter(function(e){ return e.date>=from; }).forEach(function(e){
+    tokensOf(e).forEach(function(t){ counts[t]=(counts[t]||0)+1; });
+  });
+  var top = Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; }).slice(0,10);
+  var wrap = $("#freqWrap"), row = $("#freqRow");
+  if(!top.length){ wrap.hidden = true; return; }
+  wrap.hidden = false;
+  row.innerHTML = top.map(function(t){ return '<button class="fchip" type="button">'+esc(t)+'</button>'; }).join("");
+}
+
+function tokensOf(e){
+  if(e.items && e.items.length){
+    return e.items.map(function(i){ return (typeof i==="string")? i : i.name; }).filter(function(s){ return s && s.trim(); });
+  }
+  var MEASURE = {"顆":1,"粒":1,"碗":1,"杯":1,"份":1,"個":1,"片":1,"塊":1,"條":1,"支":1,"根":1,"盤":1,"碟":1,"匙":1,"口":1,"把":1,"瓶":1,"包":1,"盒":1,"串":1,"斤":1,"克":1,"公克":1,"毫升":1,"cc":1,"大":1,"小":1,"中":1};
+  return String(e.text||"").split(/[、,，。;；\/\s]+/).filter(function(s){
+    if(!s || /^\d+$/.test(s)) return false;
+    if(s.length===1 && MEASURE[s]) return false;
+    if(/^(\d+(\.\d+)?)'?$/.test(s)) return false;
+    return true;
+  });
+}
+
+/* ---------- 新增 ---------- */
+async function addEntry(){
+  var text = $("#quickText").value.trim();
+  if(!text && !pendingPhoto){ toast("先打一句話，或加一張照片"); return; }
+  var t = nowTime();
+  var e = {
+    id: uid(), date: selectedDate, time: t, meal: mealFromTime(t),
+    text: text, items: [], symptoms: [], note: "",
+    photo: pendingPhoto || null, createdAt: new Date().toISOString()
+  };
+  await dbPut(e);
+  entries.push(e);
+  $("#quickText").value = "";
+  clearPhoto();
+  renderToday(); renderFreq();
+  toast("已記錄 " + e.time + " " + e.meal);
+}
+
+function clearPhoto(){
+  pendingPhoto=null;
+  $("#photoBtn").classList.remove("attached");
+  $("#photoBtn").textContent = "＋ 照片";
+  $("#photoHint").textContent = "";
+}
+
+function compressImage(file){
+  return new Promise(function(res,rej){
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function(){
+      var max = 800;
+      var w = img.naturalWidth, h = img.naturalHeight;
+      var scale = Math.min(1, max/Math.max(w,h));
+      var cw = Math.round(w*scale), ch = Math.round(h*scale);
+      var c = document.createElement("canvas");
+      c.width = cw; c.height = ch;
+      c.getContext("2d").drawImage(img,0,0,cw,ch);
+      URL.revokeObjectURL(url);
+      try { res(c.toDataURL("image/jpeg",0.72)); } catch(err){ rej(err); }
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("圖片讀取失敗")); };
+    img.src = url;
+  });
+}
+
+/* ---------- 刪除 / 復原 ---------- */
+async function removeEntry(id){
+  var e = entries.filter(function(x){ return x.id===id; })[0];
+  if(!e) return;
+  if(!confirm("刪除這筆紀錄？")) return;
+  await dbDel(id);
+  entries = entries.filter(function(x){ return x.id!==id; });
+  lastDeleted = e;
+  renderToday(); renderFreq();
+  toast("已刪除一筆", "復原", async function(){
+    await dbPut(lastDeleted);
+    entries.push(lastDeleted);
+    renderToday(); renderFreq();
+    toast("已復原");
+  });
+}
+
+/* ---------- 日曆 ---------- */
+function renderCalendar(){
+  var first = new Date(calY, calM, 1);
+  var days = new Date(calY, calM+1, 0).getDate();
+  var lead = first.getDay();
+  $("#calTitle").textContent = calY + "年 " + (calM+1) + " 月";
+
+  var counts = {};
+  entries.forEach(function(e){ counts[e.date] = (counts[e.date]||0)+1; });
+
+  var html = "";
+  for(var i=0;i<lead;i++) html += '<div class="cell blank"></div>';
+  for(var d=1; d<=days; d++){
+    var ds = ymd(new Date(calY,calM,d));
+    var cls = "cell";
+    if(counts[ds]) cls += " has";
+    if(ds===todayStr()) cls += " today";
+    if(ds===selectedDate) cls += " sel";
+    html += '<button class="'+cls+'" data-date="'+ds+'">'+d+(counts[ds]?'<i class="dot"></i>':'')+'</button>';
+  }
+  $("#calGrid").innerHTML = html;
+
+  var inMonth = entries.filter(function(e){ return e.date.slice(0,7)===ymd(new Date(calY,calM,1)).slice(0,7); });
+  var uniq = {};
+  inMonth.forEach(function(e){ uniq[e.date]=1; });
+  $("#calSum").innerHTML = "本月已記 <b>"+Object.keys(uniq).length+"</b> 天，共 <b>"+days+"</b> 天；"+
+    "紀錄 <b>"+inMonth.length+"</b> 筆。<br><span style='color:#98a2ae;font-size:12.5px'>點日期可跳到那天補記。</span>";
+}
+
+/* ---------- 統計 ---------- */
+function rangeBounds(){
+  if(rangeMode==="7") return {from: addDays(todayStr(),-6), to: todayStr()};
+  if(rangeMode==="30") return {from: addDays(todayStr(),-29), to: todayStr()};
+  if(rangeMode==="month"){ var d=new Date(); return {from: ymd(new Date(d.getFullYear(),d.getMonth(),1)), to: ymd(new Date(d.getFullYear(),d.getMonth()+1,0))}; }
+  if(rangeMode==="lastmonth"){ var d2=new Date(); return {from: ymd(new Date(d2.getFullYear(),d2.getMonth()-1,1)), to: ymd(new Date(d2.getFullYear(),d2.getMonth(),0))}; }
+  return {from: customFrom, to: customTo};
+}
+
+function renderStats(){
+  var b = rangeBounds();
+  if(b.from > b.to){ var t=b.from; b.from=b.to; b.to=t; }
+  var days = diffDays(b.from,b.to)+1;
+  var inRange = entries.filter(function(e){ return e.date>=b.from && e.date<=b.to; });
+  $("#periodLine").textContent = niceDate(b.from).replace(/ \S+$/,"") + " — " + niceDate(b.to).replace(/ \S+$/,"") + "（共 " + days + " 天）";
+
+  var recDays = {}, tok = {}, hours = {};
+  var firstT=[], lastT=[];
+  inRange.forEach(function(e){
+    recDays[e.date]=1;
+    tokensOf(e).forEach(function(t){ tok[t]=(tok[t]||0)+1; });
+    var h = parseInt(e.time.slice(0,2),10);
+    hours[h]=(hours[h]||0)+1;
+  });
+  var byDay = {};
+  inRange.forEach(function(e){ (byDay[e.date] = byDay[e.date]||[]).push(e); });
+  Object.keys(byDay).forEach(function(d){
+    var es = byDay[d].slice().sort(function(x,y){ return x.time.localeCompare(y.time); });
+    firstT.push(es[0].time); lastT.push(es[es.length-1].time);
+  });
+
+  var recN = Object.keys(recDays).length;
+  var pct = days ? Math.round(recN/days*100) : 0;
+  var divN = Object.keys(tok).length;
+
+  $("#statTiles").innerHTML =
+    tile("記錄完整度", pct+"%", "記了 "+recN+"／"+days+" 天") +
+    tile("紀錄筆數", inRange.length, "平均每天 "+(recN? (inRange.length/recN).toFixed(1):"0")+" 筆") +
+    tile("食物多樣性", divN, "不同食物／詞") +
+    tile("有症狀的餐", inRange.filter(function(e){ return e.symptoms && e.symptoms.length; }).length, "可對照吃了什麼");
+
+  // 完整度
+  var missing = [];
+  for(var i=0;i<days;i++){
+    var ds = addDays(b.from,i);
+    if(!recDays[ds]) missing.push(ds);
+  }
+  $("#completeness").innerHTML = recN===days
+    ? '<div class="hint">這期間每一天都有紀錄。</div>'
+    : '<div class="hint">缺 <b style="color:#8a4b08">'+missing.length+'</b> 天'+(missing.length?'：'+missing.slice(0,8).map(shortDate).join("、")+(missing.length>8?" 等":""):"")+'</div>'+
+      '<div style="height:8px;background:#f2f2ee;border-radius:4px;margin-top:8px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#0f766e"></div></div>';
+
+  // 排行
+  var rank = Object.keys(tok).sort(function(a,b2){ return tok[b2]-tok[a]; }).slice(0,12);
+  var max = rank.length ? tok[rank[0]] : 1;
+  $("#rankList").innerHTML = rank.length ? rank.map(function(t){
+    return '<li><span class="bar" style="width:'+Math.max(6, Math.round(tok[t]/max*46))+'px"></span><span class="n">'+esc(t)+'</span><span class="c">'+tok[t]+' 次</span></li>';
+  }).join("") : '<li style="color:#98a2ae;border:0">這期間還沒有紀錄</li>';
+
+  // 時段
+  var hmax = 1;
+  for(var h=0;h<24;h++){ if((hours[h]||0)>hmax) hmax=hours[h]; }
+  var bars="";
+  for(var h2=0;h2<24;h2++){
+    bars += '<i><b style="height:'+Math.round((hours[h2]||0)/hmax*100)+'%"></b></i>';
+  }
+  $("#hourBars").innerHTML = bars;
+
+  var tl = "";
+  if(firstT.length){
+    var avgFirst = avgTime(firstT), avgLast = avgTime(lastT);
+    tl = "最早的一餐平均 " + avgFirst + "，最晚的一餐平均 " + avgLast +
+         "，進食時間約 " + windowHours(avgFirst, avgLast) + " 小時。";
+  } else {
+    tl = "這期間沒有紀錄。";
+  }
+  $("#timeLine").textContent = tl;
+}
+
+function tile(k,v,s){ return '<div class="tile"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'; }
+function toMin(t){ return parseInt(t.slice(0,2),10)*60 + parseInt(t.slice(3,5),10); }
+function avgTime(list){
+  var sum = list.reduce(function(a,t){ return a+toMin(t); },0)/list.length;
+  var m = Math.round(sum);
+  return pad(Math.floor(m/60)%24)+":"+pad(m%60);
+}
+function windowHours(a,b){
+  var d = toMin(b)-toMin(a); if(d<0) d+=1440;
+  return (d/60).toFixed(1);
+}
+
+/* ---------- 報告 ---------- */
+function renderReport(){
+  var b = rangeBounds();
+  if(b.from > b.to){ var t=b.from; b.from=b.to; b.to=t; }
+  var list = entries.filter(function(e){ return e.date>=b.from && e.date<=b.to; })
+                    .sort(function(a,c){ return (a.date+a.time).localeCompare(c.date+c.time); });
+
+  var showTime=$("#optTime").checked, showPhoto=$("#optPhoto").checked,
+      showSym=$("#optSym").checked, showNote=$("#optNote").checked;
+
+  var head = '<h2>食物紀錄期間報告</h2><div class="range">'+
+    niceDate(b.from).replace(/ \S+$/,"")+' — '+niceDate(b.to).replace(/ \S+$/,"")+
+    '　共 '+(diffDays(b.from,b.to)+1)+' 天／'+list.length+' 筆　列印日期 '+todayStr()+'</div>';
+
+  if(!list.length){
+    $("#reportSheet").innerHTML = head + '<div class="rempty">這段期間沒有紀錄。</div>';
+    return;
+  }
+
+  var days = diffDays(b.from,b.to)+1;
+  var recSet = {}, tok = {}, symCount = 0, symTally = {};
+  list.forEach(function(e){
+    recSet[e.date] = 1;
+    tokensOf(e).forEach(function(t){ tok[t]=(tok[t]||0)+1; });
+    if(e.symptoms && e.symptoms.length){
+      symCount++;
+      e.symptoms.forEach(function(s){ symTally[s]=(symTally[s]||0)+1; });
+    }
+  });
+  var top = Object.keys(tok).sort(function(a,c){ return tok[c]-tok[a]; }).slice(0,5)
+    .map(function(t){ return esc(t)+"（"+tok[t]+"）"; }).join("、");
+  var symLine = Object.keys(symTally).sort(function(a,c){ return symTally[c]-symTally[a]; })
+    .map(function(s){ return esc(s)+" "+symTally[s]+" 次"; }).join("、");
+  var sum = '<div class="rsum">期間 <b>'+days+'</b> 天，有紀錄 <b>'+Object.keys(recSet).length+'</b> 天，共 <b>'+list.length+'</b> 筆；有症狀的餐 <b>'+symCount+'</b> 筆。'+
+    (top ? "<br>最常出現："+top : "")+
+    (symLine ? "<br>症狀："+symLine : "")+'</div>';
+
+  var byDate = {};
+  list.forEach(function(e){ (byDate[e.date]=byDate[e.date]||[]).push(e); });
+
+  var body = Object.keys(byDate).sort().map(function(d){
+    var es = byDate[d].sort(function(a,c){ return a.time.localeCompare(c.time); });
+    return '<div class="dayblk"><h4>'+niceDate(d)+'　'+es.length+' 筆</h4>'+ es.map(function(e){
+      var left = showTime ? '<span class="t">'+e.time+'</span>' : '';
+      var sym = (showSym && e.symptoms && e.symptoms.length) ? '<div class="syms">'+e.symptoms.map(function(s){return '<span class="sym">'+esc(s)+'</span>';}).join("")+'</div>' : "";
+      var note = (showNote && e.note) ? '<div class="note">'+esc(e.note)+'</div>' : "";
+      var photo = (showPhoto && e.photo) ? '<img class="rphoto" src="'+e.photo+'" alt="餐點照片">' : "";
+      var line = e.text ? esc(e.text) : '<span style="color:#8b95a1">（只有照片，沒有文字）</span>';
+      return '<div class="mline">'+left+'<span class="m">'+e.meal+'</span><div class="b">'+line+sym+note+photo+'</div></div>';
+    }).join("")+'</div>';
+  }).join("");
+
+  $("#reportSheet").innerHTML = head + sum + body;
+}
+
+/* ---------- 匯出 / 匯入 ---------- */
+function exportJSON(){
+  var data = {version:1, exportedAt:new Date().toISOString(), entries:entries};
+  var blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "食物紀錄-"+todayStr()+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  toast("已匯出備份檔");
+}
+
+async function importJSON(file){
+  var text = await file.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e){ alert("檔案格式不對，無法匯入。"); return; }
+  var list = data.entries || (Array.isArray(data) ? data : null);
+  if(!list){ alert("找不到 entries 欄位。"); return; }
+  var added=0;
+  for(var i=0;i<list.length;i++){
+    var e = list[i];
+    if(!e || !e.id || !e.date) continue;
+    await dbPut(e); added++;
+  }
+  entries = await dbAll();
+  renderAll();
+  toast("匯入 "+added+" 筆");
+}
+
+/* ---------- toast ---------- */
+var toastTimer=null;
+function toast(msg, actLabel, actFn){
+  var el = $("#toast"), at = $("#toastAct");
+  $("#toastText").textContent = msg;
+  if(actLabel){
+    at.hidden = false; at.textContent = actLabel;
+    at.onclick = function(){ at.hidden=true; el.classList.remove("on"); if(actFn) actFn(); };
+  } else { at.hidden = true; at.onclick = null; }
+  el.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove("on"); }, actLabel?6000:2600);
+}
+
+/* ---------- 事件 ---------- */
+$("#prevDay").onclick = function(){ selectedDate = addDays(selectedDate,-1); renderToday(); };
+$("#nextDay").onclick = function(){ selectedDate = addDays(selectedDate,1); renderToday(); };
+$("#addBtn").onclick = addEntry;
+$("#quickText").addEventListener("keydown", function(ev){
+  if((ev.metaKey || ev.ctrlKey) && ev.key==="Enter"){ addEntry(); }
+});
+$("#photoBtn").onclick = function(){ $("#photoInput").click(); };
+$("#photoInput").onchange = async function(ev){
+  var f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  try {
+    pendingPhoto = await compressImage(f);
+    $("#photoBtn").classList.add("attached");
+    $("#photoBtn").textContent = "＋ 換照片";
+    $("#photoHint").textContent = "已附 1 張（約 " + Math.round(pendingPhoto.length/1024) + " KB）";
+  } catch(err){ alert("這張圖讀不進來，換一張試試。"); }
+  ev.target.value = "";
+};
+$("#photoHint").addEventListener("click", clearPhoto);
+
+$("#freqRow").addEventListener("click", function(ev){
+  var b = ev.target.closest(".fchip"); if(!b) return;
+  var ta = $("#quickText");
+  ta.value = ta.value ? (ta.value + "、" + b.textContent) : b.textContent;
+  ta.focus();
+});
+
+$("#entryList").addEventListener("click", async function(ev){
+  var card = ev.target.closest(".card"); if(!card) return;
+  var id = card.dataset.id;
+  var act = ev.target.dataset.act;
+
+  if(act==="del"){ removeEntry(id); return; }
+  if(act==="edit"){ card.querySelector(".editbox").classList.toggle("on"); return; }
+  if(act==="cancel"){ card.querySelector(".editbox").classList.remove("on"); return; }
+  if(ev.target.dataset.sym){
+    ev.target.classList.toggle("sel");
+    return;
+  }
+  if(act==="save"){
+    var e = entries.filter(function(x){ return x.id===id; })[0];
+    if(!e) return;
+    e.time = card.querySelector('[data-f="time"]').value || e.time;
+    e.meal = card.querySelector('[data-f="meal"]').value;
+    e.text = card.querySelector('[data-f="text"]').value.trim() || e.text;
+    e.note = card.querySelector('[data-f="note"]').value.trim();
+    e.symptoms = $$('.symtoggle button.sel', card).map(function(b){ return b.dataset.sym; });
+    await dbPut(e);
+    renderToday();
+    toast("已更新");
+  }
+});
+
+$("#tabbar").addEventListener("click", function(ev){
+  var b = ev.target.closest("button[data-view]"); if(!b) return;
+  setView(b.dataset.view);
+});
+
+$("#calPrev").onclick = function(){ calM--; if(calM<0){calM=11;calY--;} renderCalendar(); };
+$("#calNext").onclick = function(){ calM++; if(calM>11){calM=0;calY++;} renderCalendar(); };
+$("#calGrid").addEventListener("click", function(ev){
+  var c = ev.target.closest(".cell[data-date]"); if(!c) return;
+  selectedDate = c.dataset.date;
+  renderToday();
+  setView("today");
+});
+
+function syncRange(){
+  $$(".rchip").forEach(function(b){ b.classList.toggle("on", b.dataset.range===rangeMode); });
+  var show = rangeMode==="custom";
+  $("#customRange").classList.toggle("on", show);
+  $("#repCustomRange").classList.toggle("on", show);
+  if(show){
+    $("#fromDate").value = customFrom; $("#toDate").value = customTo;
+    $("#repFrom").value = customFrom; $("#repTo").value = customTo;
+  }
+}
+
+$("#rangeRow").addEventListener("click", function(ev){
+  var b = ev.target.closest(".rchip"); if(!b) return;
+  rangeMode = b.dataset.range;
+  syncRange();
+  if(rangeMode!=="custom") renderStats();
+});
+$("#applyRange").onclick = function(){
+  var f=$("#fromDate").value, t=$("#toDate").value;
+  if(!f||!t){ alert("兩邊日期都要選。"); return; }
+  customFrom=f; customTo=t; renderStats(); syncRange();
+};
+
+$("#repRangeRow").addEventListener("click", function(ev){
+  var b = ev.target.closest(".rchip"); if(!b) return;
+  rangeMode = b.dataset.range;
+  syncRange();
+  if(rangeMode!=="custom") renderReport();
+});
+$("#repApply").onclick = function(){
+  var f=$("#repFrom").value, t=$("#repTo").value;
+  if(!f||!t){ alert("兩邊日期都要選。"); return; }
+  customFrom=f; customTo=t; renderReport(); syncRange();
+};
+["optTime","optPhoto","optSym","optNote"].forEach(function(id){
+  $("#"+id).onchange = renderReport;
+});
+$("#printBtn").onclick = function(){ window.print(); };
+
+$("#exportBtn").onclick = exportJSON;
+$("#importBtn").onclick = function(){ $("#importInput").click(); };
+$("#importInput").onchange = async function(ev){
+  var f = ev.target.files && ev.target.files[0];
+  if(f) await importJSON(f);
+  ev.target.value="";
+};
+$("#storageBtn").onclick = async function(){
+  if(!navigator.storage || !navigator.storage.estimate){ $("#storageLine").textContent = "此瀏覽器不支援"; return; }
+  var est = await navigator.storage.estimate();
+  $("#storageLine").textContent = Math.round(est.usage/1048576) + " MB / 約 " + Math.round(est.quota/1048576) + " MB";
+};
+$("#demoBtn").onclick = async function(){
+  if(!confirm("載入 7 天範例資料？會與現有紀錄並存。")) return;
+  var demo = [
+    {d:-0,t:"08:10",m:"早餐",x:"蛋餅、豆漿",s:[],n:""},
+    {d:-0,t:"12:30",m:"午餐",x:"雞腿便當",s:["脹氣"],n:"吃完有點脹"},
+    {d:-0,t:"19:20",m:"晚餐",x:"番茄麵、燙青菜",s:[],n:""},
+    {d:-1,t:"08:40",m:"早餐",x:"吐司夾蛋、紅茶",s:[],n:""},
+    {d:-1,t:"13:05",m:"午餐",x:"牛肉麵",s:["胃痛"],n:""},
+    {d:-2,t:"09:00",m:"早餐",x:"燕麥粥",s:[],n:"自煮"},
+    {d:-2,t:"18:50",m:"晚餐",x:"滷肉飯、味噌湯",s:["脹氣"],n:""},
+    {d:-3,t:"12:40",m:"午餐",x:"水餃 15 顆",s:[],n:""},
+    {d:-4,t:"08:20",m:"早餐",x:"蛋餅、豆漿",s:[],n:""},
+    {d:-4,t:"19:00",m:"晚餐",x:"咖哩飯",s:[],n:""},
+    {d:-6,t:"12:10",m:"午餐",x:"雞腿便當",s:[],n:""}
+  ];
+  for(var i=0;i<demo.length;i++){
+    var x=demo[i];
+    await dbPut({id:uid(), date:addDays(todayStr(),x.d), time:x.t, meal:x.m, text:x.x,
+      items:[], symptoms:x.s, note:x.n, photo:null, createdAt:new Date().toISOString()});
+  }
+  entries = await dbAll(); renderAll();
+  toast("已載入範例資料");
+};
+$("#clearBtn").onclick = async function(){
+  if(!confirm("清空所有紀錄？這個動作無法復原，建議先匯出備份。")) return;
+  if(!confirm("確定要刪除全部資料嗎？")) return;
+  for(var i=0;i<entries.length;i++) await dbDel(entries[i].id);
+  entries=[]; renderAll(); toast("已清空");
+};
+
+/* ---------- 啟動 ---------- */
+function renderAll(){ renderToday(); renderFreq(); if(view==="calendar") renderCalendar(); if(view==="stats") renderStats(); if(view==="report") renderReport(); }
+
+function demoSeed(){
+  var rows = [
+    {d:0, t:"08:10", m:"早餐", x:"蛋餅、豆漿", s:[], n:""},
+    {d:0, t:"12:30", m:"午餐", x:"雞腿便當", s:["脹氣"], n:"吃完有點脹"},
+    {d:0, t:"19:20", m:"晚餐", x:"番茄麵、燙青菜", s:[], n:""},
+    {d:1, t:"08:40", m:"早餐", x:"吐司夾蛋、紅茶", s:[], n:""},
+    {d:1, t:"13:05", m:"午餐", x:"牛肉麵", s:["胃痛"], n:""},
+    {d:2, t:"09:00", m:"早餐", x:"燕麥粥", s:[], n:"自煮"},
+    {d:2, t:"18:50", m:"晚餐", x:"滷肉飯、味噌湯", s:["脹氣"], n:""},
+    {d:3, t:"12:40", m:"午餐", x:"水餃 15 顆", s:[], n:""},
+    {d:4, t:"08:20", m:"早餐", x:"蛋餅、豆漿", s:[], n:""},
+    {d:4, t:"19:00", m:"晚餐", x:"咖哩飯", s:[], n:""},
+    {d:6, t:"12:10", m:"午餐", x:"雞腿便當", s:[], n:""}
+  ];
+  return rows.map(function(r,i){
+    return { id:"demo-"+i, date:addDays(todayStr(),-r.d), time:r.t, meal:r.m, text:r.x,
+             items:[], symptoms:r.s.slice(), note:r.n, photo:null, createdAt:"" };
+  });
+}
+
+(async function init(){
+  try {
+    if(DEMO){
+      entries = demoSeed();
+      $("#demobar").hidden = false;
+      $("#demoBtn").style.display = "none";
+      $("#subline").textContent = "示範模式：可以隨意點，重新整理就還原";
+    } else {
+      db = await openDB();
+      entries = await dbAll();
+      $("#subline").textContent = entries.length ? ("共 " + entries.length + " 筆紀錄，全部存在這台裝置") : ("記錄吃什麼、什麼時候吃，一段期間整理成報告");
+    }
+    $("#fromDate").value = customFrom; $("#toDate").value = customTo;
+    syncRange();
+    renderAll();
+  } catch(err){
+    console.error(err);
+    var msg = (location.protocol === "file:")
+      ? "直接雙擊開啟檔案時，部分瀏覽器會封鎖本機資料庫。<br>請用本機伺服器開啟，或直接部署到 GitHub Pages（見 README）。"
+      : "這個瀏覽器不支援本機資料庫（IndexedDB），<br>請改用 Chrome、Edge、Safari 或 Firefox。";
+    $("#entryList").innerHTML = '<div class="empty">'+msg+'</div>';
+  }
+  window.__foodlogReady = true;
+})();
+
+})();
+</script>
+</body>
+</html>
