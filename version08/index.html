@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f5f0">
+<title>我的食物日記</title>
+<style>
+:root{--bg:#f6f5f0;--card:#fff;--ink:#242922;--muted:#73796f;--line:#e6e7df;--green:#536b4f;--green2:#eaf0e6;--sand:#f4eee3;--danger:#a5483e;--radius:20px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}.app{max-width:760px;margin:0 auto;padding:18px 15px 100px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:4px 0 20px}.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--green);font-weight:750}.brand{font-size:25px;letter-spacing:-.04em;font-weight:800;margin:2px 0}.sub{font-size:13px;color:var(--muted)}.iconbtn{background:white;border:1px solid var(--line);border-radius:13px;padding:10px 12px;color:var(--ink)}.datebar{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;margin-bottom:15px;gap:8px}.datebar button{background:var(--green2);color:var(--green);border-radius:12px;padding:10px 14px;font-weight:700}.datecenter{text-align:center;min-width:0}.datecenter strong{display:block;font-size:15px}.datecenter span{font-size:12px;color:var(--muted)}.tabs{display:flex;background:#eae9e2;border-radius:14px;padding:4px;gap:4px;margin-bottom:16px}.tab{flex:1;background:transparent;padding:10px 4px;border-radius:11px;color:#697065;font-weight:700;font-size:14px}.tab.active{background:white;color:var(--ink);box-shadow:0 1px 4px #0000000c}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:20px 2px 10px}.sectionhead h2{font-size:18px;margin:0}.count{font-size:12px;color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px}.mealhead{display:flex;align-items:center;justify-content:space-between;gap:10px}.mealname{font-weight:800;font-size:16px}.meta{color:var(--muted);font-size:12px}.mealphoto{width:100%;max-height:300px;object-fit:cover;border-radius:14px;margin-top:12px;background:#f2f1eb}.foodtitle{font-weight:750;margin:10px 0 2px}.notes{font-size:14px;color:#5c6259;white-space:pre-wrap;overflow-wrap:anywhere}.small-actions{display:flex;gap:8px;margin-top:12px}.small-actions button{background:#f3f3ee;padding:8px 12px;border-radius:10px;font-size:13px;color:#4e554b}.small-actions .delete{color:var(--danger)}.empty{padding:28px 16px;text-align:center;color:var(--muted);background:#ffffff8a;border:1px dashed #d8dbd0;border-radius:18px}.empty .emoji{font-size:28px;margin-bottom:5px}.primary{background:var(--green);color:white;border-radius:14px;padding:13px 16px;font-weight:800}.secondary{background:var(--green2);color:var(--green);border-radius:14px;padding:12px 14px;font-weight:750}.addrow{display:flex;gap:10px;margin:12px 0}.addrow button{flex:1}.eventtime{display:inline-block;border-radius:8px;background:var(--sand);color:#7a6549;padding:4px 8px;font-size:12px;font-weight:750;margin-bottom:8px}.eventtext{white-space:pre-wrap;overflow-wrap:anywhere}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{font-size:13px;font-weight:750;color:#4f564d}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--ink);outline-color:#879b7f}.field textarea{min-height:80px;resize:vertical}.photo-pick{display:flex;gap:10px}.photo-pick label{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;background:var(--green2);color:var(--green);border-radius:12px;padding:12px;font-weight:750;font-size:14px}.photo-pick input{display:none}.preview{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:10px}.hidden{display:none!important}.modalback{position:fixed;inset:0;background:#1b211ba8;z-index:10;display:flex;align-items:flex-end;justify-content:center;padding:10px}.modal{background:var(--bg);border-radius:24px 24px 18px 18px;padding:20px;width:min(100%,650px);max-height:92vh;overflow:auto}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modalhead h2{font-size:20px;margin:0}.close{background:#e9e9e2;border-radius:10px;padding:8px 11px}.modalfoot{display:flex;gap:10px;margin-top:8px}.modalfoot button{flex:1}.pillrow{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--line);background:white;border-radius:12px;padding:10px 13px;color:#555d52}.pill.selected{border-color:var(--green);background:var(--green2);color:var(--green);font-weight:800}.reportbox{background:white;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}.reportbox h3{font-size:16px;margin:0 0 8px}.reportbox p,.reportbox li{font-size:14px;color:#555d52}.hint{font-size:12px;color:var(--muted);line-height:1.55}.footer-note{font-size:12px;color:var(--muted);text-align:center;margin-top:24px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#263126;color:white;padding:11px 16px;border-radius:12px;z-index:20;box-shadow:0 8px 24px #0002;font-size:14px;max-width:90%;text-align:center}.navbottom{position:fixed;bottom:0;left:0;right:0;padding:10px 15px calc(10px + env(safe-area-inset-bottom));background:#f6f5f0ed;backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:5}.navinner{max-width:760px;margin:auto;display:flex;gap:10px}.navinner button{flex:1}.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#f4f4ee;border-radius:13px;padding:12px}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}
+@media(min-width:600px){.app{padding-top:26px}.modalback{align-items:center}.modal{border-radius:24px}.mealphoto{max-height:380px}}
+
+/* Visual refresh: refined cards, clearer hierarchy, and thumb-friendly controls */
+:root{--bg:#f7f6f1;--card:#fff;--ink:#20271f;--muted:#777e73;--line:#e5e7de;--green:#526b4f;--green2:#edf2e9;--radius:23px}
+body{line-height:1.58;background:linear-gradient(180deg,#f8f7f2 0%,#f3f2eb 100%)}
+.app{max-width:780px;padding:24px 18px 118px}
+.top{align-items:center;margin:8px 0 24px;gap:16px}
+.eyebrow{font-size:12px;letter-spacing:.18em}
+.brand{font-size:clamp(27px,5vw,34px);letter-spacing:-.035em;margin:5px 0}
+.sub{font-size:15px}
+.iconbtn{font-weight:750;padding:13px 16px;border-radius:17px;box-shadow:0 4px 14px #283b2510;white-space:nowrap}
+.datebar{border-radius:24px;padding:12px;margin-bottom:18px;box-shadow:0 5px 18px #283b2508}
+.datebar button{min-width:48px;min-height:48px;border-radius:16px;font-size:18px}
+.datecenter strong{font-size:clamp(16px,3.8vw,21px)}
+.datecenter span{font-size:13px}
+.tabs{background:#eae9e2;border-radius:19px;padding:5px;gap:5px;margin-bottom:22px}
+.tab{padding:13px 5px;border-radius:15px;font-size:14px;min-height:52px;transition:background .15s ease}
+.tab.active{background:var(--green);color:#fff;box-shadow:0 4px 12px #526b4f25}
+.tab-icon{display:inline-block;margin-right:3px;font-size:15px}
+.sectionhead{margin:22px 3px 13px}
+.sectionhead h2{font-size:21px;letter-spacing:-.02em}
+.count{font-size:13px}
+.card{border-radius:24px;padding:19px;box-shadow:0 4px 18px #283b2505}
+.empty{padding:38px 18px;border-radius:23px;background:#fffdf9;border-color:#dfe3d8}
+.empty .emoji{font-size:38px;margin-bottom:10px}
+.empty b{font-size:17px;color:var(--ink)}
+.empty .hint{font-size:14px;margin-top:5px}
+.primary,.secondary{min-height:52px;border-radius:17px;font-size:15px;transition:transform .12s ease,filter .12s ease}
+.primary{box-shadow:0 5px 12px #526b4f16}
+.primary:active,.secondary:active,.datebar button:active{transform:scale(.985)}
+.addrow{gap:12px;margin:15px 0}
+.addrow button{padding:15px 10px}
+.hint{font-size:13px;line-height:1.7}
+.footer-note{font-size:12px;line-height:1.9;margin:28px 0 8px;padding-top:17px;border-top:1px solid #e7e8e0}
+.signature{font-size:12px;letter-spacing:.04em;color:#697563;margin-top:5px;font-weight:700}
+.navbottom{padding:11px 18px calc(12px + env(safe-area-inset-bottom));background:#f7f6f1ed}
+.navinner{gap:12px}
+.navinner button{min-height:54px;border-radius:18px;font-size:15px}
+.reportbox{border-radius:22px;box-shadow:0 4px 18px #283b2505}
+@media(max-width:390px){.app{padding:18px 13px 115px}.top{gap:8px}.brand{font-size:25px}.iconbtn{font-size:13px;padding:11px 10px}.datebar{gap:5px;padding:8px}.datebar button{min-width:40px;min-height:44px;padding:8px 10px}.tab{font-size:12px}.tab-icon{display:none}.addrow{gap:8px}.addrow button{font-size:14px}}
+
+/* Screenshot-matched UI: spacious cream panel, large date card and soft theme */
+:root{--bg:#f5f4ed;--card:#fff;--ink:#292f27;--muted:#81877b;--line:#e7e6df;--green:#557354;--green2:#e9e8e0;--sand:#f4eee3;--radius:25px}
+body{background:#f5f4ed;line-height:1.55}
+.app{max-width:820px;padding:24px 22px 126px}
+.top{margin:4px 0 24px;gap:14px}
+.eyebrow{font-size:14px;letter-spacing:.03em}
+.brand{font-size:clamp(30px,5.5vw,40px);letter-spacing:-.04em;margin:5px 0}
+.sub{font-size:17px}
+.iconbtn{font-size:17px;background:transparent;border:2px solid #d8d8d0;border-radius:999px;padding:13px 17px;box-shadow:none}
+.datebar{border:0;border-radius:27px;padding:16px 22px;margin-bottom:22px;box-shadow:none;min-height:105px}
+.datebar button{background:#eeedeb;color:#30342f;border-radius:999px;min-width:66px;min-height:52px;padding:10px 16px;font-size:17px}
+.datecenter strong{font-size:clamp(23px,4.5vw,34px);font-weight:850;letter-spacing:-.02em}
+.datecenter span{font-size:17px}
+#nextDay{display:none}
+.tabs{background:transparent;padding:0;gap:8px;margin-bottom:22px}
+.tab{background:#e9e8e0;border-radius:23px;padding:18px 8px;min-height:78px;font-size:clamp(14px,2.6vw,21px);color:#6d7769}
+.tab.active{background:var(--green);color:white;box-shadow:none}
+.sectionhead{margin:22px 4px 14px}
+.sectionhead h2{font-size:25px}
+.card{border:0;border-radius:25px;padding:21px;box-shadow:none}
+.empty{border:0;background:#fff;border-radius:24px;padding:35px 18px}
+.primary,.secondary{min-height:58px;border-radius:999px;font-size:17px;padding:15px 20px}
+.primary{background:#191919;box-shadow:none}
+.secondary{background:#e6e5df;color:#292f27}
+.addrow{gap:12px;margin:18px 0}
+.addrow button{min-height:58px}
+.field input,.field textarea,.field select{border-radius:15px;padding:14px;font-size:16px}
+.reportbox{border:0;border-radius:23px;box-shadow:none;padding:19px}
+.footer-note{margin-top:28px}
+.navbottom{background:#f5f4eded;border-top:0;padding:10px 22px calc(12px + env(safe-area-inset-bottom))}
+.navinner{gap:12px;max-width:820px}
+.navinner button{min-height:64px;border-radius:999px;font-size:18px}
+.modalback{padding:12px}
+.modal{border-radius:28px;background:var(--bg);padding:22px}
+@media(max-width:430px){.app{padding:20px 16px 122px}.top{gap:9px;margin-bottom:22px}.brand{font-size:clamp(27px,8vw,36px)}.sub{font-size:15px}.iconbtn{font-size:15px;padding:11px 13px}.datebar{padding:13px 14px;gap:8px;min-height:96px}.datebar button{min-width:54px;min-height:48px;padding:9px 13px;font-size:15px}.datecenter strong{font-size:25px}.datecenter span{font-size:15px}.tabs{gap:6px}.tab{min-height:72px;padding:12px 4px;font-size:15px;border-radius:20px}.tab-icon{display:inline-block;font-size:16px;margin-right:2px}.sectionhead h2{font-size:22px}.card{padding:17px}.navbottom{padding-left:16px;padding-right:16px}.navinner{gap:9px}.navinner button{font-size:16px;min-height:60px}.primary,.secondary{font-size:16px}}
+
+
+/* Eight-page navigation and reporting views */
+.page-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:0 auto 9px;max-width:780px}
+.page-nav button{background:transparent;color:#777e73;border-radius:13px;padding:7px 3px 5px;font-size:11px;font-weight:700;min-height:48px}
+.page-nav button .navico{display:block;font-size:19px;line-height:1.2;margin-bottom:2px}
+.page-nav button.active{background:#e7ede2;color:var(--green)}
+.subnavlink{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.subnavlink button{flex:1;min-width:120px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.calendar-grid button{padding:9px 0;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--ink);font-size:13px}
+.calendar-grid button.hasdata{background:var(--green2);border-color:#cbd8c5;font-weight:800;color:var(--green)}
+.calendar-grid button.chosen{background:var(--green);color:#fff}
+.chartbars{display:flex;align-items:end;gap:7px;height:150px;padding:12px 5px 0;border-bottom:1px solid var(--line)}
+.chartbar{flex:1;min-width:0;text-align:center;font-size:10px;color:var(--muted)}
+.chartbar i{display:block;width:100%;max-width:30px;margin:0 auto 5px;background:linear-gradient(180deg,#73956d,#426642);border-radius:7px 7px 2px 2px;min-height:3px}
+.chartbar b{display:block;font-size:11px;color:var(--ink)}
+@media(max-width:390px){.page-nav button{font-size:10px}.page-nav button .navico{font-size:17px}.calendar-grid{gap:3px}.calendar-grid button{padding:8px 0}}
+
+
+/* Playful visual polish for pages 4–8: events, stage summary, report, analytics, settings */
+:root{
+ --mint:#e7f2e7;--mint-strong:#4f7955;--peach:#fff0e4;--peach-strong:#bd7547;
+ --lilac:#f0eafb;--lilac-strong:#8065a8;--sky:#e7f2fb;--sky-strong:#4d7fa5;
+ --lemon:#fff6d9;--rose:#fbe9e8;
+}
+#eventsView .sectionhead h2:before{content:"🌿 ";font-size:.9em}
+#eventsView>.card{background:linear-gradient(135deg,#f0f7eb,#fff 72%);border-color:#dce8d4}
+#eventsView #eventList .card{border-left:5px solid #86a77b;background:linear-gradient(110deg,#fff 70%,#f1f7eb)}
+#reviewView .sectionhead h2:before{content:"🧩 ";font-size:.9em}
+#reviewView>.card:first-of-type{background:linear-gradient(135deg,#fff4e6 0%,#fff 72%);border-color:#f0dfc8}
+#reviewView .field input{background:#fffdf8;border-color:#ead9c5}
+#reviewView #buildReport{background:linear-gradient(100deg,#4d704b,#6d9164);box-shadow:0 7px 15px #4d704b22}
+#reportResult .reportbox:first-child{background:linear-gradient(135deg,#eef7e9,#fff 75%);border-color:#d8e8d0}
+#reportResult .reportbox:nth-child(2){background:linear-gradient(135deg,#fff4e7,#fff 78%);border-color:#f0dfc9}
+#reportResult .reportbox:nth-child(3){background:linear-gradient(135deg,#f0eafb,#fff 78%);border-color:#e1d7f2}
+#reportResult .stat:nth-child(1){background:#fff0d9}
+#reportResult .stat:nth-child(2){background:#e9f5e8}
+#reportResult .stat:nth-child(3){background:#f3eafa}
+#reportResult .addrow{display:grid;grid-template-columns:1fr}
+#reportResult .addrow button{width:100%;min-height:48px}
+#statsView .sectionhead h2:before{content:"📊 ";font-size:.9em}
+#statsView>.statrow{gap:9px;margin-bottom:14px}
+#statsView>.statrow .stat{border-radius:18px;padding:15px 12px;border:1px solid transparent;box-shadow:0 4px 12px #26362608}
+#statsView>.statrow .stat:nth-child(1){background:linear-gradient(135deg,#fff0d9,#fffaf2);border-color:#f3dfbf}
+#statsView>.statrow .stat:nth-child(2){background:linear-gradient(135deg,#e8f5e8,#fafff8);border-color:#d5e8d2}
+#statsView>.statrow .stat:nth-child(3){background:linear-gradient(135deg,#f1eafb,#fffaff);border-color:#e4d8f3}
+#statsView>.statrow .stat b{font-size:27px;letter-spacing:-.04em}
+#statsView>.card{border-radius:24px;background:linear-gradient(150deg,#fff 65%,#f8f8f1);padding:18px}
+#statsView>.card h3{display:flex;align-items:center;gap:8px;font-size:16px;margin:0 0 10px}
+#statsView>.card h3:before{content:"";width:8px;height:22px;border-radius:8px;background:linear-gradient(#8caf80,#4f7955)}
+.chartbars{height:170px;background:linear-gradient(180deg,#f7fbf3,#fff);border:1px solid #e6eddf;border-bottom:2px solid #cbdcc4;border-radius:16px;padding:15px 8px 0}
+.chartbar i{background:linear-gradient(180deg,#a4c98e 0%,#4f7955 100%);box-shadow:0 3px 6px #4f795522}
+#mealTypeStats{display:flex;flex-wrap:wrap;gap:8px}
+#mealTypeStats .type-stat{flex:1 1 40%;padding:12px;border-radius:14px;background:#fff0e4;border:1px solid #f2ddca;font-weight:700}
+#calendarView .sectionhead h2:before{content:"🗓️ ";font-size:.9em}
+#calendarView>.card{background:linear-gradient(145deg,#eef6ec,#fff 58%);border-color:#dbe8d6}
+#calendarTitle{font-size:17px;margin:0;color:var(--green)}
+.calendar-grid button{min-height:40px;border-radius:13px;background:#fff;box-shadow:0 2px 5px #23332305;transition:transform .12s ease}
+.calendar-grid button.hasdata{background:linear-gradient(145deg,#dcebd5,#f2f8ed);border-color:#bcd4b1;box-shadow:inset 0 -3px 0 #b8d1ac}
+.calendar-grid button.chosen{background:linear-gradient(135deg,#426844,#6f9167);color:white;border-color:#426844;box-shadow:0 4px 10px #42684430}
+#settingsView .sectionhead h2:before{content:"🎨 ";font-size:.9em}
+#settingsView>.card:nth-of-type(1){background:linear-gradient(135deg,#f0eafb,#fff 70%);border-color:#e2d7f1}
+#settingsView>.card:nth-of-type(2){background:linear-gradient(135deg,#e8f5e8,#fff 70%);border-color:#d5e8d2}
+#settingsView>.card:nth-of-type(3){background:linear-gradient(135deg,#fff3e3,#fff 70%);border-color:#f0dfc9}
+#settingsView .pillrow{gap:9px}
+#settingsView .pill{border-radius:999px;padding:11px 14px;background:#fff;box-shadow:0 2px 7px #27382708}
+#settingsView .pill.selected{background:#e2f0dc;border-color:#7da372;color:#355f37;box-shadow:0 3px 9px #5c87511b}
+#settingsView h3{font-size:17px;margin:0 0 8px}
+.page-nav{background:#fff;border:1px solid #e6e7df;border-radius:20px;padding:5px;box-shadow:0 5px 18px #26362608}
+.page-nav button{transition:background .15s ease,color .15s ease}
+.page-nav button.active{background:linear-gradient(135deg,#dfeedd,#edf5e8);color:#416843;box-shadow:inset 0 -2px 0 #c5d9bd}
+.navbottom{background:#f7f6f1f2}
+@media(max-width:390px){
+ #statsView>.statrow .stat{padding:12px 8px}
+ #statsView>.statrow .stat b{font-size:23px}
+ #reportResult .stat{padding:10px 8px}
+ .calendar-grid button{min-height:35px;padding:6px 0;font-size:12px}
+ #settingsView .pill{padding:9px 11px;font-size:13px}
+}
+
+
+/* Pre-send report preview */
+.preview-report{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff;padding:10px;margin-bottom:14px}
+.preview-report .reportbox{box-shadow:none;margin:0 0 10px;padding:13px;border-radius:15px}
+.preview-report .reportbox:last-child{margin-bottom:0}
+.preview-report .statrow{gap:6px}
+.preview-report .stat{padding:9px;background:linear-gradient(145deg,#edf4e8,#f8f1e6)}
+.preview-report .stat b{font-size:18px}
+@media(max-width:600px){.preview-report{max-height:42vh}.modal{padding:16px}.preview-report .reportbox{padding:11px}}
+
+
+/* Stage summary layout inspired by the approved two-panel reference */
+#reviewView{display:grid;grid-template-columns:minmax(0,.96fr) minmax(0,1fr);gap:12px;align-items:start}
+#reviewView>.sectionhead{grid-column:1/-1;margin-top:18px}
+#reviewView>.card{grid-column:1;grid-row:2;margin:0;background:linear-gradient(145deg,#fff8ee,#fff 70%);border:1px solid #f0dfc9;padding:18px;border-radius:22px}
+#reviewView #reportResult{grid-column:2;grid-row:2;min-width:0}
+#reviewView .field input{font-size:14px;padding:12px 10px}
+#reviewView #buildReport{font-size:15px;min-height:48px;border-radius:13px}
+.stage-action-panel{margin-top:20px;padding-top:16px;border-top:1px solid #eadfce}
+.stage-action-panel h3{font-size:17px;margin:0 0 12px}
+.stage-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.stage-stat{min-width:0;border-radius:15px;padding:12px 8px;display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center;border:1px solid transparent}
+.stage-stat span{font-size:11px;font-weight:800;line-height:1.35}.stage-stat b{font-size:24px;line-height:1.1}.stage-stat small{font-size:11px}
+.food-stat{background:linear-gradient(145deg,#fff0d6,#fff8ed);border-color:#f3dfbf;color:#96611e}.body-stat{background:linear-gradient(145deg,#e8f5e8,#f8fff6);border-color:#d5e8d2;color:#347043}.photo-stat{background:linear-gradient(145deg,#f7eaf3,#fff7fc);border-color:#efd9e7;color:#a14f86}
+.stage-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}.stage-action{min-height:62px;border-radius:15px;padding:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;font-size:13px;font-weight:800;line-height:1.4}.stage-action small{font-size:11px;font-weight:600}.export-html{background:#e9f1e7;color:#345c3b}.export-data{background:#e8f1e9;color:#315d3b}.send-doctor{background:linear-gradient(135deg,#e6f0ff,#f0e9ff);color:#315eb2}
+.stage-preview-card{background:#fff;border:1px solid #e5e4dc;border-radius:23px;overflow:hidden;box-shadow:0 5px 18px #27382708}.stage-preview-heading{padding:17px 17px 13px;background:linear-gradient(135deg,#f7f8f1,#fff);border-bottom:1px solid #ecece5;display:flex;justify-content:space-between;gap:8px;align-items:center}.stage-kicker{font-size:9px;letter-spacing:.12em;color:#6c8b65;font-weight:900}.stage-preview-heading h3{font-size:20px;margin:3px 0}.stage-preview-heading p{font-size:12px;color:#687064;margin:0}.stage-preview-icon{font-size:25px;background:#edf5e8;border-radius:13px;padding:8px}.stage-preview-card .reportbox{margin:0;border-radius:0;padding:15px 16px;border:0;border-bottom:1px solid #efeee8;box-shadow:none}.stage-preview-card .reportbox h3{font-size:15px;margin-bottom:9px;color:#30392f}.stage-preview-card ul{padding-left:19px;margin:7px 0}.stage-preview-card li,.stage-preview-card p{font-size:12px;line-height:1.65;margin:3px 0;color:#50584e;overflow-wrap:anywhere}.stage-preview-card .preview-meals{background:linear-gradient(110deg,#fff 75%,#fff8ed)}.stage-preview-card .preview-events{background:linear-gradient(110deg,#fff 75%,#f3effb)}.stage-timeline{border-top:1px dashed #e7e3d9;margin-top:9px;padding-top:7px}.stage-disclaimer{font-size:11px;color:#777e73;background:#fafaf6;padding:12px 15px;line-height:1.55}
+@media(max-width:600px){#reviewView{display:flex;flex-direction:column;gap:12px}#reviewView>.sectionhead{width:100%;margin:18px 2px 4px}#reviewView>.card,#reviewView #reportResult{width:100%;grid-column:auto;grid-row:auto}#reviewView>.card{padding:17px}.stage-stat-grid{gap:6px}.stage-stat{padding:10px 5px}.stage-stat span{font-size:10px}.stage-stat b{font-size:23px}.stage-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.stage-action{font-size:11px;min-height:78px;padding:7px 4px;border-radius:12px}.stage-action small{font-size:9px}.stage-preview-heading h3{font-size:19px}.stage-preview-card .reportbox{padding:14px}.stage-preview-card li,.stage-preview-card p{font-size:13px}}
+
+</style></head>
+<body><main class="app">
+<header class="top"><div><div class="eyebrow">FOOD · BODY · NOTES</div><div class="brand">我的食物日記</div><div class="sub">先好好記錄，之後再一起回看。</div></div><button class="iconbtn" id="settingsBtn" aria-label="显示设置">⚙️ 设置</button></header>
+<div class="datebar"><button id="prevDay" aria-label="前一天">‹</button><div class="datecenter"><strong id="dateLabel"></strong><span id="weekdayLabel"></span></div><button id="todayBtn">今天</button><button id="nextDay" aria-label="後一天">›</button></div>
+<div class="tabs"><button class="tab active" data-tab="food"><span class="tab-icon">✦</span> 飲食</button><button class="tab" data-tab="events"><span class="tab-icon">♧</span> 身體事件</button><button class="tab" data-tab="review"><span class="tab-icon">▤</span> 階段整合</button></div>
+<section id="foodView"><div class="sectionhead"><h2>今天吃了什麼</h2><span class="count" id="mealCount">0 筆記錄</span></div><div id="mealList"></div><div class="addrow"><button class="primary" id="addMealBtn">＋ 記一餐</button><button class="secondary" id="addSnackBtn">＋ 點心／飲品</button></div><div class="hint">拍照或選擇相片，再簡單寫下吃了什麼。照片與文字保存在這台裝置的瀏覽器中。</div><div class="subnavlink"><button class="secondary" id="openAllRecords">☷ 查看全部記錄</button></div></section>
+<section id="eventsView" class="hidden"><div class="sectionhead"><h2>身體事件</h2><span class="count" id="eventCount">0 筆記錄</span></div><div class="card"><div class="hint" style="margin-bottom:12px">不舒服或有特別感受時，記下大概時段和一句描述就好。</div><button class="primary" style="width:100%" id="addEventBtn">＋ 記下身體狀況</button></div><div id="eventList"></div></section>
+<section id="reviewView" class="hidden"><div class="sectionhead"><h2>7–14 天階段整合</h2></div><div class="card"><div class="field"><label>開始日期</label><input type="date" id="rangeStart"></div><div class="field"><label>結束日期</label><input type="date" id="rangeEnd"></div><div class="hint" style="margin-bottom:12px">選擇一段日期，查看記錄概況並匯出給自己的醫生。這份摘要不會自行診斷疾病或體質。</div><button class="primary" style="width:100%" id="buildReport">整理這段資料</button></div><div id="reportResult"></div></section>
+<section id="recordsView" class="hidden"><div class="sectionhead"><h2>記錄列表</h2><span class="count" id="allRecordCount">全部記錄</span></div><div class="card"><div class="field"><label>搜尋記錄</label><input id="recordSearch" placeholder="搜尋食物、備註或身體感受"></div><div class="pillrow"><button class="pill selected" data-record-filter="all">全部</button><button class="pill" data-record-filter="meals">飲食</button><button class="pill" data-record-filter="events">身體事件</button></div></div><div id="allRecordsList"></div></section>
+<section id="statsView" class="hidden"><div class="sectionhead"><h2>統計分析</h2><span class="count">依現有記錄計算</span></div><div class="statrow"><div class="stat"><b id="statMeals">0</b><span>飲食記錄</span></div><div class="stat"><b id="statEvents">0</b><span>身體事件</span></div><div class="stat"><b id="statPhotos">0</b><span>照片張數</span></div></div><div class="card"><h3>近 7 天每日飲食記錄</h3><div class="chartbars" id="mealChart"></div><p class="hint">圖表只統計已儲存的記錄，不代表醫療診斷。</p></div><div class="card"><h3>餐別分布</h3><div id="mealTypeStats" class="notes">尚無記錄</div></div></section>
+<section id="calendarView" class="hidden"><div class="sectionhead"><h2>日曆</h2><span class="count">點日期查看記錄</span></div><div class="card"><div class="mealhead"><button class="secondary" id="calendarPrev">‹ 上月</button><h3 id="calendarTitle"></h3><button class="secondary" id="calendarNext">下月 ›</button></div><div class="calendar-grid" id="calendarGrid" style="margin-top:12px"></div><p class="hint" style="margin-top:12px">有記錄的日期會以淡綠色標示。</p></div></section>
+<section id="settingsView" class="hidden"><div class="sectionhead"><h2>設定／備份</h2></div><div class="card"><h3>顯示設定</h3><p class="hint">選擇主題色彩，立即套用至本機畫面。</p><div class="pillrow" id="themeOptions"><button class="pill selected" data-theme="forest">🌿 森林綠</button><button class="pill" data-theme="blue">🌊 霧藍色</button><button class="pill" data-theme="brown">☕ 暖棕色</button></div></div><div class="card"><h3>資料管理</h3><p class="hint">定期匯出備份。換手機或清除瀏覽器資料前，請先備份。</p><button class="primary" id="openBackupPage" style="width:100%">☁️ 資料備份與還原</button></div><div class="card"><h3>關於</h3><p>我的食物日記</p><p class="hint">陳佳宏製作 · 2026年10月29日</p></div></section>
+<div class="footer-note"><div>本機日記 · 不需帳號 · 請定期備份重要資料</div><div class="signature">陳佳宏製作 · 2026年10月29日</div></div>
+</main>
+<div class="navbottom"><div class="page-nav"><button class="active" data-page="home"><span class="navico">⌂</span>首頁</button><button data-page="stats"><span class="navico">▥</span>統計</button><button data-page="calendar"><span class="navico">▦</span>日曆</button><button data-page="settings"><span class="navico">⚙</span>設定</button></div><div class="navinner"><button class="secondary" id="quickEvent">＋ 身體事件</button><button class="primary" id="quickMeal">＋ 記一餐</button></div></div>
+<div id="modalRoot"></div><div id="toast" class="toast hidden"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);const DB_NAME='food-diary-local-v1',DB_VERSION=1;let db=null,currentDate=localDate(new Date()),activeTab='food',editingMeal=null,editingEvent=null,photoData=null;
+function localDate(d){let x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
+function shiftDate(s,n){let d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return localDate(d)}
+function fmtDate(s){if(!s)return '';let d=new Date(s+'T12:00:00');return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`}
+function weekday(s){return ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][new Date(s+'T12:00:00').getDay()]}
+function openDB(){return new Promise((resolve,reject)=>{let req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{let d=req.result;if(!d.objectStoreNames.contains('meals'))d.createObjectStore('meals',{keyPath:'id'});if(!d.objectStoreNames.contains('events'))d.createObjectStore('events',{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+function store(name,mode='readonly'){return db.transaction(name,mode).objectStore(name)}
+function reqp(req){return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
+async function all(name){return reqp(store(name).getAll())}async function put(name,item){return reqp(store(name,'readwrite').put(item))}async function del(name,id){return reqp(store(name,'readwrite').delete(id))}
+function id(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2600)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function setTab(tab){activeTab=tab;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('foodView').classList.toggle('hidden',tab!=='food');$('eventsView').classList.toggle('hidden',tab!=='events');$('reviewView').classList.toggle('hidden',tab!=='review');document.querySelector('.navbottom').classList.remove('hidden')}
+function renderDate(){$('dateLabel').textContent=fmtDate(currentDate);$('weekdayLabel').textContent=weekday(currentDate);renderMeals();renderEvents()}
+async function renderMeals(){let meals=(await all('meals')).filter(m=>m.date===currentDate).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));$('mealCount').textContent=`${meals.length} 筆記錄`;let root=$('mealList');if(!meals.length){root.innerHTML='<div class="empty"><div class="emoji">🍚</div><b>今天還沒有飲食記錄</b><div class="hint">吃完再記也可以，不用一次寫得很完整。</div></div>';return}root.innerHTML=meals.map(m=>`<article class="card"><div class="mealhead"><div><div class="mealname">${esc(m.mealType||'餐點')}</div><div class="meta">${esc(m.timeLabel||'')} ${m.foodName?'· '+esc(m.foodName):''}</div></div><span class="meta">${m.photos?.length?'📷 '+m.photos.length+' 張':''}</span></div>${(m.photos||[]).map(src=>`<img class="mealphoto" src="${src}" alt="食物照片" loading="lazy">`).join('')} ${m.notes?`<div class="notes" style="margin-top:10px">${esc(m.notes)}</div>`:''}<div class="small-actions"><button data-edit-meal="${m.id}">編輯</button><button class="delete" data-delete-meal="${m.id}">刪除</button></div></article>`).join('');root.querySelectorAll('[data-edit-meal]').forEach(b=>b.onclick=()=>openMeal(b.dataset.editMeal));root.querySelectorAll('[data-delete-meal]').forEach(b=>b.onclick=async()=>{if(confirm('確定刪除這筆飲食記錄？')){await del('meals',b.dataset.deleteMeal);renderMeals();toast('已刪除')}})}
+async function renderEvents(){let events=(await all('events')).filter(e=>e.date===currentDate).sort((a,b)=>a.period.localeCompare(b.period));$('eventCount').textContent=`${events.length} 筆記錄`;let root=$('eventList');if(!events.length){root.innerHTML='<div class="empty"><div class="emoji">🌿</div><b>今天還沒有身體事件</b><div class="hint">有需要時再記，沒有也沒關係。</div></div>';return}let order={'上午':0,'中午':1,'下午':2,'晚上':3};events.sort((a,b)=>order[a.period]-order[b.period]);root.innerHTML=events.map(e=>`<article class="card"><span class="eventtime">${esc(e.period)}</span><div class="eventtext">${esc(e.description)}</div><div class="small-actions"><button data-edit-event="${e.id}">編輯</button><button class="delete" data-delete-event="${e.id}">刪除</button></div></article>`).join('');root.querySelectorAll('[data-edit-event]').forEach(b=>b.onclick=()=>openEvent(b.dataset.editEvent));root.querySelectorAll('[data-delete-event]').forEach(b=>b.onclick=async()=>{if(confirm('確定刪除這筆事件？')){await del('events',b.dataset.deleteEvent);renderEvents();toast('已刪除')}})}
+function showModal(title,content,onReady){$('modalRoot').innerHTML=`<div class="modalback" id="modalback"><div class="modal"><div class="modalhead"><h2>${title}</h2><button class="close" id="closeModal">✕</button></div>${content}</div></div>`;$('closeModal').onclick=closeModal;$('modalback').addEventListener('click',e=>{if(e.target.id==='modalback')closeModal()});if(onReady)onReady()}
+function closeModal(){$('modalRoot').innerHTML='';editingMeal=null;editingEvent=null;photoData=null}
+function openMeal(mealId=null,defaultType='午餐'){editingMeal=mealId;photoData=null;all('meals').then(ms=>{let m=ms.find(x=>x.id===mealId)||{date:currentDate,mealType:defaultType,timeLabel:'',foodName:'',notes:'',photos:[]};photoData=m.photos||[];showModal(mealId?'編輯飲食記錄':'記一餐',`<form id="mealForm"><div class="formgrid"><div class="field"><label>日期</label><input type="date" id="mDate" value="${esc(m.date)}" required></div><div class="field"><label>餐別</label><select id="mType">${['早餐','午餐','晚餐','點心／飲品'].map(t=>`<option ${m.mealType===t?'selected':''}>${t}</option>`).join('')}</select></div></div><div class="field"><label>吃了什麼？</label><input id="mName" placeholder="例如：排骨湯、青菜、白飯" value="${esc(m.foodName)}"></div><div class="field"><label>照片（可選）</label><div class="photo-pick"><label>📷 拍照<input id="cameraInput" type="file" accept="image/*" capture="environment"></label><label>🖼️ 選相片<input id="galleryInput" type="file" accept="image/*" multiple></label></div><div id="photoPreview"></div><div class="hint">第一版先保存照片，不會自動呼叫 AI 辨識，也不會產生 AI API 費用。</div></div><div class="field"><label>補充備註（可選）</label><textarea id="mNotes" placeholder="例如：吃得比較少、自己煮的、喝了冰飲">${esc(m.notes)}</textarea></div><div class="modalfoot"><button type="button" class="secondary" id="cancelMeal">取消</button><button class="primary" type="submit">保存記錄</button></div></form>`,()=>{let renderPreview=()=>{$('photoPreview').innerHTML=photoData.map((src,i)=>`<div style="display:inline-block;position:relative;width:86px;margin:8px 8px 0 0"><img src="${src}" style="width:86px;height:86px;object-fit:cover;border-radius:10px"><button type="button" data-rm-photo="${i}" style="position:absolute;top:3px;right:3px;border-radius:50%;background:#222b;color:white;width:24px;height:24px">×</button></div>`).join('');$('photoPreview').querySelectorAll('[data-rm-photo]').forEach(b=>b.onclick=()=>{photoData.splice(+b.dataset.rmPhoto,1);renderPreview()})};renderPreview();async function addFiles(files){for(let file of files){if(!file.type.startsWith('image/'))continue;try{let data=await compressImage(file);photoData.push(data)}catch{toast('有照片無法讀取')}}renderPreview()}$('cameraInput').onchange=e=>addFiles(e.target.files);$('galleryInput').onchange=e=>addFiles(e.target.files);$('cancelMeal').onclick=closeModal;$('mealForm').onsubmit=async e=>{e.preventDefault();let date=$('mDate').value;if(!date){toast('請選擇日期');return}let obj={id:mealId||id(),date,mealType:$('mType').value,timeLabel:'',foodName:$('mName').value.trim(),notes:$('mNotes').value.trim(),photos:photoData,createdAt:mealId?m.createdAt||new Date().toISOString():new Date().toISOString(),updatedAt:new Date().toISOString()};try{await put('meals',obj);currentDate=date;closeModal();renderDate();toast('已保存飲食記錄')}catch(err){toast('保存失敗，可能是裝置儲存空間不足')}}})})}
+function compressImage(file){return new Promise((resolve,reject)=>{let reader=new FileReader();reader.onerror=reject;reader.onload=()=>{let img=new Image();img.onerror=reject;img.onload=()=>{let max=1500,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.82))};img.src=reader.result};reader.readAsDataURL(file)})}
+function openEvent(eventId=null){editingEvent=eventId;all('events').then(es=>{let e=es.find(x=>x.id===eventId)||{date:currentDate,period:'上午',description:''};showModal(eventId?'編輯身體事件':'記下身體狀況',`<form id="eventForm"><div class="field"><label>日期</label><input type="date" id="eDate" value="${esc(e.date)}" required></div><div class="field"><label>大概時間</label><div class="pillrow">${['上午','中午','下午','晚上'].map(p=>`<button type="button" class="pill ${e.period===p?'selected':''}" data-period="${p}">${p}</button>`).join('')}</div><input type="hidden" id="ePeriod" value="${esc(e.period)}"></div><div class="field"><label>發生什麼事？</label><textarea id="eDesc" placeholder="例如：今天覺得胃脹、一直怕冷、下午特別疲倦" required>${esc(e.description)}</textarea></div><div class="modalfoot"><button type="button" class="secondary" id="cancelEvent">取消</button><button type="submit" class="primary">保存記錄</button></div></form>`,()=>{document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-period]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');$('ePeriod').value=b.dataset.period});$('cancelEvent').onclick=closeModal;$('eventForm').onsubmit=async ev=>{ev.preventDefault();let date=$('eDate').value,description=$('eDesc').value.trim();if(!description){toast('寫一句簡單描述就好');return}let obj={id:eventId||id(),date,period:$('ePeriod').value,description,createdAt:eventId?e.createdAt||new Date().toISOString():new Date().toISOString(),updatedAt:new Date().toISOString()};await put('events',obj);currentDate=date;closeModal();renderDate();setTab('events');toast('已保存身體事件')}})})}
+function toDataObject(){return Promise.all([all('meals'),all('events')]).then(([meals,events])=>({app:'我的食物日記',schemaVersion:1,exportedAt:new Date().toISOString(),meals,events}))}
+function downloadBlob(blob,name){let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
+function applyTheme(name){
+ const themes={
+  '森林绿':{bg:'#f5f4ed',green:'#557354',green2:'#e9e8e0',ink:'#292f27',muted:'#81877b'},
+  '雾蓝色':{bg:'#f0f4f6',green:'#527b91',green2:'#dfe9ee',ink:'#29343b',muted:'#788791'},
+  '暖棕色':{bg:'#f6f0e8',green:'#8b684b',green2:'#ede2d5',ink:'#382f27',muted:'#8a7c6d'}
+ };
+ const t=themes[name]||themes['森林绿'];
+ const root=document.documentElement;
+ root.style.setProperty('--bg',t.bg);root.style.setProperty('--green',t.green);root.style.setProperty('--green2',t.green2);root.style.setProperty('--ink',t.ink);root.style.setProperty('--muted',t.muted);
+ document.body.style.background=t.bg;
+ document.querySelector('.navbottom').style.background=t.bg+'ed';
+ try{localStorage.setItem('food-diary-theme',name)}catch(e){}
+}
+function openSettings(){
+ const saved=(()=>{try{return localStorage.getItem('food-diary-theme')||'森林绿'}catch(e){return '森林绿'}})();
+ showModal('显示设置',`<div class="reportbox"><h3>显示设置</h3><p>点选主题，看看整体颜色变化。</p><div class="theme-options" style="display:grid;gap:12px">${[['森林绿','🌿 森林绿'],['雾蓝色','🌊 雾蓝色'],['暖棕色','☕ 暖棕色']].map(([v,label])=>`<button type="button" class="theme-choice" data-theme="${v}" style="border:1px solid #deded7;background:${saved===v?'var(--green)':'white'};color:${saved===v?'white':'#62665f'};border-radius:999px;padding:15px;font-weight:800;font-size:17px">${label}${saved===v?'　✓':''}</button>`).join('')}</div></div><div class="reportbox"><h3>资料备份与还原</h3><p>饮食文字、身体事件和照片都保存在这台装置的浏览器中。</p><button type="button" class="secondary" style="width:100%" id="openBackupFromSettings">资料备份与还原</button></div><div class="signature" style="text-align:center;padding:12px">陳佳宏製作 · 2026年10月29日</div>`,()=>{
+  document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{applyTheme(b.dataset.theme);document.querySelectorAll('[data-theme]').forEach(x=>{const active=x.dataset.theme===b.dataset.theme;x.style.background=active?'var(--green)':'white';x.style.color=active?'white':'#62665f';x.innerHTML=x.textContent.replace('　✓','')+(active?'　✓':'')});toast('已切换为'+b.dataset.theme)});
+  $('openBackupFromSettings').onclick=()=>{openBackup()};
+ });
+}
+function openBackup(){showModal('資料備份與還原',`<div class="reportbox"><h3>匯出完整備份</h3><p>包含飲食文字、身體事件和照片。請把備份檔保存在安全的位置。</p><button class="primary" style="width:100%" id="exportBackup">匯出完整備份（JSON）</button></div><div class="reportbox"><h3>還原備份</h3><p>選擇先前匯出的 JSON 檔。匯入會合併資料；相同記錄 ID 將以備份內容更新。</p><label class="secondary" style="display:block;text-align:center;cursor:pointer">選擇備份檔<input id="importBackup" type="file" accept=".json,application/json" style="display:none"></label></div><div class="reportbox"><h3>📷 照片儲存管理</h3><p>寄送醫師時會自動產生壓縮 JPG 副本（長邊最多 1600 px、品質約 80%），原始照片不會被修改。照片很多時會按約 15 MB 分批傳送。</p></div><div class="hint">資料只保存在目前瀏覽器中。清除網站資料、換瀏覽器或換手機，都可能導致資料遺失；請定期匯出備份。</div>`,()=>{$('exportBackup').onclick=async()=>{let data=await toDataObject();downloadBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),`我的食物日記備份_${localDate(new Date())}.json`);toast('已開始匯出備份')};$('importBackup').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let obj=JSON.parse(await file.text());if(!obj||!Array.isArray(obj.meals)||!Array.isArray(obj.events))throw Error('格式不符');if(!confirm(`備份中有 ${obj.meals.length} 筆飲食、${obj.events.length} 筆身體事件。匯入並合併到目前資料？`))return;for(let m of obj.meals){if(!m.id||!m.date)continue;await put('meals',m)}for(let v of obj.events){if(!v.id||!v.date)continue;await put('events',v)}closeModal();renderDate();toast('備份還原完成')}catch(err){toast('無法讀取此備份檔，原有資料未被清除')}}})}
+function dayDiff(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000)+1}
+function makeSummaryDoc(body,start,end){
+ return `<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>飲食與身體事件摘要</title><style>body{font:16px/1.7 -apple-system,sans-serif;max-width:800px;margin:24px auto;padding:0 16px;color:#242922}.reportbox{border:1px solid #ddd;border-radius:14px;padding:16px;margin:14px 0}.statrow{display:flex;gap:10px}.stat{background:#f2f3ec;padding:12px;border-radius:10px;flex:1}.stat b{display:block;font-size:22px}.hint{color:#666;font-size:13px}</style><h1>飲食與身體事件摘要</h1><p>記錄期間：${fmtDate(start)} 至 ${fmtDate(end)}</p>${body}</html>`;
+}
+function makePlainDoctorSummary(backupData,start,end){
+ const meals=(backupData.meals||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+ const events=(backupData.events||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+ const lines=[
+  '飲食與身體事件摘要',
+  `記錄期間：${fmtDate(start)} 至 ${fmtDate(end)}（共 ${dayDiff(start,end)} 天）`,
+  '',
+  '一、飲食記錄',
+  `總筆數：${meals.length} 筆`,
+  `照片數量：${meals.reduce((n,m)=>n+(m.photos?.length||0),0)} 張`
+ ];
+ if(meals.length){
+  meals.forEach(m=>{
+   const details=[m.foodName||'',m.notes||''].filter(Boolean).join('；');
+   lines.push(`- ${m.date||''} · ${m.mealType||'飲食'}${details?'：'+details:''}${m.photos?.length?`（${m.photos.length} 張照片，原圖未附在郵件內文）`:''}`);
+  });
+ }else lines.push('這段期間沒有飲食記錄。');
+ lines.push('', '二、身體事件', `總筆數：${events.length} 筆`);
+ if(events.length) events.forEach(e=>lines.push(`- ${e.date||''} · ${e.period||''}：${e.description||''}`));
+ else lines.push('這段期間沒有身體事件記錄。');
+ lines.push('', '照片會在傳送前另製壓縮 JPG 副本；原始照片保留於本機。此摘要僅整理使用者自行記錄的內容，不代表醫療診斷。');
+ return lines.join('\n');
+}
+async function compressPhotoDataUrl(dataUrl, maxSide=1600, quality=0.82){
+ return new Promise((resolve,reject)=>{
+  const img=new Image();
+  img.onload=()=>{try{const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(blob=>blob?resolve(blob):reject(Error('壓縮失敗')),'image/jpeg',quality)}catch(e){reject(e)}};
+  img.onerror=()=>reject(Error('照片讀取失敗'));img.src=dataUrl;
+ });
+}
+async function shareDoctorFiles(summaryDoc,backupData,start,end){
+ const summaryText=makePlainDoctorSummary(backupData,start,end);
+ const records=[];
+ (backupData.meals||[]).forEach(m=>(m.photos||[]).forEach((photo,i)=>{if(typeof photo==='string'&&photo.startsWith('data:image/'))records.push({photo,date:m.date||start,kind:m.mealType||'飲食',index:i+1})}));
+ (backupData.events||[]).forEach(e=>(e.photos||[]).forEach((photo,i)=>{if(typeof photo==='string'&&photo.startsWith('data:image/'))records.push({photo,date:e.date||start,kind:'身體事件',index:i+1})}));
+ if(!records.length){if(navigator.share){try{await navigator.share({title:`飲食與身體事件摘要 ${start} 至 ${end}`,text:summaryText});toast('摘要已開啟分享選單；此日期區間沒有可附加的照片');return}catch(err){if(err&&err.name==='AbortError')return}}toast('這段日期沒有可寄送的照片，已保留摘要文字');return}
+ toast(`正在壓縮 ${records.length} 張照片，請稍候…`);
+ const files=[];let total=0;
+ try{
+  for(let i=0;i<records.length;i++){
+   const r=records[i];const blob=await compressPhotoDataUrl(r.photo,1600,0.80);const file=new File([blob],`食物日記_${r.date}_${r.kind}_${r.index}.jpg`,{type:'image/jpeg'});files.push(file);total+=blob.size;
+  }
+ }catch(e){toast('有照片無法壓縮，請先確認記錄中的照片是否能正常顯示');return}
+ const maxBytes=15*1024*1024;
+ if(total>maxBytes){
+  const batches=[];let batch=[],bytes=0;
+  for(const file of files){if(batch.length&&bytes+file.size>maxBytes){batches.push(batch);batch=[];bytes=0}batch.push(file);bytes+=file.size}if(batch.length)batches.push(batch);
+  showModal('照片已壓縮，需分批傳送',`<div class="reportbox"><h3>共 ${files.length} 張照片</h3><p>壓縮後約 ${(total/1024/1024).toFixed(1)} MB，超過單封郵件建議容量。已分成 ${batches.length} 批，每批不超過約 15 MB。</p><p>每次點擊會開啟一次分享選單，請選「郵件」寄出，再回到 App 傳送下一批。</p><p class="hint">摘要文字會放在每封郵件內文，照片以 JPG 附件傳送。</p></div><div id="batchButtons"></div>`,()=>{const root=$('batchButtons');batches.forEach((batch,i)=>{const b=document.createElement('button');b.className='primary';b.style='width:100%;margin:6px 0';b.textContent=`📨 傳送第 ${i+1}/${batches.length} 批（${batch.length} 張）`;b.onclick=async()=>{try{if(!navigator.share||!navigator.canShare||!navigator.canShare({files:batch})){toast('此瀏覽器不支援附加照片分享，請使用 iPhone Safari');return}await navigator.share({title:`食物日記照片第 ${i+1} 批`,text:summaryText+`\n\n照片批次：第 ${i+1}/${batches.length} 批`,files:batch});toast(`第 ${i+1} 批分享已開啟，請確認郵件並寄送`)}catch(err){if(err&&err.name!=='AbortError')toast('分享未成功，請再試一次')}};root.appendChild(b)}); });
+  return;
+ }
+ if(!navigator.share||!navigator.canShare||!navigator.canShare({files})){
+  showModal('照片已壓縮完成',`<div class="reportbox"><h3>共 ${files.length} 張照片</h3><p>壓縮後約 ${(total/1024/1024).toFixed(1)} MB。</p><p>目前瀏覽器無法一次分享這些照片附件。請使用 iPhone Safari 開啟 App，再按「一鍵傳送給醫師」。</p></div><button class="primary" style="width:100%" id="downloadCompressedPhotos">下載壓縮照片（${files.length} 張）</button>`,()=>{$('downloadCompressedPhotos').onclick=()=>{files.forEach((file,i)=>setTimeout(()=>downloadBlob(file,file.name),i*250));toast('已開始下載壓縮照片')}});
+  return;
+ }
+ try{await navigator.share({title:`飲食與身體事件摘要 ${start} 至 ${end}`,text:summaryText+`\n\n附件：${files.length} 張已壓縮 JPG 照片（約 ${(total/1024/1024).toFixed(1)} MB）。`,files});toast(`已開啟分享選單：摘要內文＋${files.length} 張壓縮照片。請選郵件並確認寄送`)}catch(err){if(err&&err.name!=='AbortError')toast('分享未成功，請重新操作')}
+}
+async function buildReport(){
+ let start=$('rangeStart').value,end=$('rangeEnd').value;
+ if(!start||!end||start>end){toast('請確認日期範圍');return}
+ let days=dayDiff(start,end);
+ if(days>31&&!confirm('這段日期超過 31 天，仍要整理嗎？'))return;
+ let [meals,events]=await Promise.all([all('meals'),all('events')]);
+ meals=meals.filter(x=>x.date>=start&&x.date<=end).sort((a,b)=>a.date.localeCompare(b.date));
+ events=events.filter(x=>x.date>=start&&x.date<=end).sort((a,b)=>a.date.localeCompare(b.date));
+ let photoCount=meals.reduce((n,m)=>n+(m.photos?.length||0),0);
+ let countByType={};meals.forEach(m=>countByType[m.mealType]=(countByType[m.mealType]||0)+1);
+ const card=document.querySelector('#reviewView>.card');
+ let oldStats=$('stageActionPanel');if(oldStats)oldStats.remove();
+ card.insertAdjacentHTML('beforeend',`<div id="stageActionPanel" class="stage-action-panel"><h3>✨ 摘要內容</h3><div class="stage-stat-grid"><div class="stage-stat food-stat"><span>🍴 飲食記錄</span><b>${meals.length}</b><small>筆記錄</small></div><div class="stage-stat body-stat"><span>🌿 身體事件</span><b>${events.length}</b><small>筆記錄</small></div><div class="stage-stat photo-stat"><span>🖼️ 照片數量</span><b>${photoCount}</b><small>張照片</small></div></div><div class="stage-actions"><button class="stage-action export-html" id="exportSummary">📄 匯出醫師閱讀摘要 <small>(HTML)</small></button><button class="stage-action export-data" id="exportRangeBackup">🗂️ 匯出完整資料 <small>(含照片)</small></button><button class="stage-action send-doctor" id="shareDoctor">📨 一鍵傳送給醫師 <small>(摘要＋壓縮照片)</small></button></div></div>`);
+ let timelineMeals=meals.length?meals.map(m=>`<p><b>${esc(m.date)} · ${esc(m.mealType||'飲食')}</b>${m.foodName?' — '+esc(m.foodName):''}${m.notes?'；'+esc(m.notes):''}${m.photos?.length?`（${m.photos.length} 張照片已包含於完整備份）`:''}</p>`).join(''):'<p>這段期間沒有飲食記錄。</p>';
+ let timelineEvents=events.length?events.map(v=>`<p><b>${esc(v.date)} · ${esc(v.period||'')}</b> — ${esc(v.description)}</p>`).join(''):'<p>這段期間沒有身體事件記錄。</p>';
+ const previewHtml=`<div class="stage-preview-heading"><div><span class="stage-kicker">YOUR PERIOD SUMMARY</span><h3>階段記錄摘要</h3><p>${fmtDate(start)} ～ ${fmtDate(end)} · 共 ${days} 天</p></div><span class="stage-preview-icon">📋</span></div><div class="reportbox preview-meals"><h3>🍽️ 一、飲食記錄</h3><ul><li>總筆數：${meals.length} 筆</li><li>主要餐別：${Object.keys(countByType).length?Object.entries(countByType).map(([k,v])=>`${esc(k)} ${v} 筆`).join('、'):'尚無記錄'}</li><li>照片數量：${photoCount} 張</li></ul><div class="stage-timeline">${timelineMeals}</div></div><div class="reportbox preview-events"><h3>🌱 二、身體事件</h3><ul><li>總筆數：${events.length} 筆</li></ul><div class="stage-timeline">${timelineEvents}</div></div><div class="stage-disclaimer">此摘要只整理已記錄的內容，不代表醫療診斷，也不會僅依食物紀錄判定中醫體質。</div>`;
+ $('reportResult').innerHTML=`<div class="stage-preview-card" id="stagePreviewCard">${previewHtml}</div>`;
+ const summaryBody=()=>previewHtml;
+ const makeBackup=async()=>{let data=await toDataObject();data.meals=data.meals.filter(x=>x.date>=start&&x.date<=end);data.events=data.events.filter(x=>x.date>=start&&x.date<=end);return data};
+ $('exportSummary').onclick=()=>{let doc=makeSummaryDoc(summaryBody(),start,end);downloadBlob(new Blob([doc],{type:'text/html;charset=utf-8'}),`飲食與身體事件摘要_${start}_${end}.html`);toast('已匯出摘要')};
+ $('exportRangeBackup').onclick=async()=>{let data=await makeBackup();downloadBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),`日記資料_${start}_${end}.json`);toast('已匯出完整資料')};
+ $('shareDoctor').onclick=async()=>{try{const body=summaryBody();showModal('傳送前預覽',`<div class="hint" style="margin-bottom:12px">請先確認日期、飲食與身體事件內容，再選擇傳送方式。郵件內文會直接放入可閱讀的文字摘要；照片會在傳送前壓縮成 JPG 附件，原始照片不會被覆蓋。</div><div class="preview-report">${body}</div><div class="reportbox" style="background:linear-gradient(135deg,#edf4e8,#fff8ec)"><h3>📨 選擇傳送方式</h3><p>選擇郵件時，摘要會直接放在郵件內文，不再附上無法直接閱讀的 HTML 摘要檔。原始照片與完整資料可另外匯出。</p><button class="primary" style="width:100%;margin-bottom:8px" id="confirmShareDoctor">📨 寄送可直接閱讀的摘要</button><button class="secondary" style="width:100%;margin-bottom:8px" id="previewExportSummary">📄 匯出文字摘要</button><button class="secondary" style="width:100%" id="previewExportBackup">🗂️ 匯出完整資料（含照片）</button></div>`,()=>{$('confirmShareDoctor').onclick=async()=>{try{const data=await makeBackup();const doc=makeSummaryDoc(body,start,end);closeModal();await shareDoctorFiles(doc,data,start,end)}catch(err){toast('產生附件失敗，請稍後再試')}};$('previewExportSummary').onclick=async()=>{const data=await makeBackup();const txt=makePlainDoctorSummary(data,start,end);downloadBlob(new Blob([txt],{type:'text/plain;charset=utf-8'}),`doctor-summary-${start}-${end}.txt`);toast('已匯出可直接閱讀的文字摘要')};$('previewExportBackup').onclick=async()=>{const data=await makeBackup();downloadBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),`日記資料_${start}_${end}.json`);toast('已匯出完整資料')}})}catch(err){toast('產生預覽失敗，請稍後再試')}};
+}
+
+let mainPage='home',recordFilter='all',calendarMonth=new Date();
+function hideMainViews(){['foodView','eventsView','reviewView','recordsView','statsView','calendarView','settingsView'].forEach(id=>$(id).classList.add('hidden'))}
+function showMainPage(name){mainPage=name;hideMainViews();document.querySelector('.navinner').style.display=name==='home'?'flex':'none';document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(name==='home'){setTab(activeTab);$('foodView').classList.toggle('hidden',activeTab!=='food');$('eventsView').classList.toggle('hidden',activeTab!=='events');$('reviewView').classList.toggle('hidden',activeTab!=='review');document.querySelector('.tabs').classList.remove('hidden')}else{document.querySelector('.tabs').classList.add('hidden');({records:'recordsView',stats:'statsView',calendar:'calendarView',settings:'settingsView'})[name]&&$( ({records:'recordsView',stats:'statsView',calendar:'calendarView',settings:'settingsView'})[name]).classList.remove('hidden');if(name==='records')renderAllRecords();if(name==='stats')renderStats();if(name==='calendar')renderCalendar();if(name==='settings')applyTheme(localStorage.getItem('foodDiaryTheme')||'forest')} }
+async function renderAllRecords(){let [ms,es]=await Promise.all([all('meals'),all('events')]);let q=($('recordSearch').value||'').trim().toLowerCase();let rows=[];if(recordFilter!=='events')ms.forEach(m=>rows.push({type:'meal',date:m.date,time:m.timeLabel||'',title:m.mealType||'飲食',desc:[m.foodName,m.notes].filter(Boolean).join(' · '),id:m.id}));if(recordFilter!=='meals')es.forEach(e=>rows.push({type:'event',date:e.date,time:e.period||'',title:'身體事件',desc:e.description||'',id:e.id}));rows=rows.filter(x=>(x.title+' '+x.desc+' '+x.date).toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));$('allRecordCount').textContent=`${rows.length} 筆記錄`;$('allRecordsList').innerHTML=rows.length?rows.map(x=>`<article class="card"><div class="mealhead"><div><div class="mealname">${esc(x.type==='meal'?'🍽️ '+x.title:'🌿 '+x.title)}</div><div class="meta">${esc(x.date)} ${esc(x.time)}</div></div><button class="secondary" data-open-record="${x.type}" data-id="${esc(x.id)}">查看</button></div><div class="notes" style="margin-top:8px">${esc(x.desc||'未填內容')}</div></article>`).join(''):'<div class="empty">沒有符合條件的記錄</div>';$('allRecordsList').querySelectorAll('[data-open-record]').forEach(b=>b.onclick=()=>{currentDate=rows.find(x=>x.id===b.dataset.id)?.date||currentDate;renderDate();showMainPage('home');if(b.dataset.openRecord==='meal')openMeal(b.dataset.id);else openEvent(b.dataset.id)})}
+async function renderStats(){let [ms,es]=await Promise.all([all('meals'),all('events')]);$('statMeals').textContent=ms.length;$('statEvents').textContent=es.length;$('statPhotos').textContent=ms.reduce((n,m)=>n+(m.photos?.length||0),0);let vals=[];for(let i=6;i>=0;i--){let d=shiftDate(localDate(new Date()),-i);vals.push({d,n:ms.filter(m=>m.date===d).length})}let max=Math.max(1,...vals.map(x=>x.n));$('mealChart').innerHTML=vals.map(x=>`<div class="chartbar"><b>${x.n}</b><i style="height:${Math.max(3,x.n/max*88)}px"></i>${x.d.slice(5).replace('-','/')}</div>`).join('');let types={};ms.forEach(m=>types[m.mealType||'未分類']=(types[m.mealType||'未分類']||0)+1);$('mealTypeStats').innerHTML=Object.entries(types).length?Object.entries(types).map(([k,v])=>`<p>${esc(k)}：${v} 筆</p>`).join(''):'尚無飲食記錄'}
+async function renderCalendar(){let ms=await all('meals'),es=await all('events');let data=new Set([...ms.map(x=>x.date),...es.map(x=>x.date)]);let y=calendarMonth.getFullYear(),m=calendarMonth.getMonth();$('calendarTitle').textContent=`${y} 年 ${m+1} 月`;let first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let out=['日','一','二','三','四','五','六'].map(x=>`<div class="meta" style="text-align:center;font-weight:800">${x}</div>`).join('');for(let i=0;i<first;i++)out+='<div></div>';for(let d=1;d<=days;d++){let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;out+=`<button class="${data.has(key)?'hasdata ':''}${key===currentDate?'chosen':''}" data-calendar-date="${key}">${d}</button>`}$('calendarGrid').innerHTML=out;$('calendarGrid').querySelectorAll('[data-calendar-date]').forEach(b=>b.onclick=()=>{currentDate=b.dataset.calendarDate;renderDate();showMainPage('home');setTab('food')})}
+function applyTheme(t){let themes={forest:['#f7f6f1','#526b4f','#edf2e9'],blue:['#f0f4f6','#527b91','#dde8ee'],brown:['#f6f0e8','#8b684b','#ede2d5']};let v=themes[t]||themes.forest;document.documentElement.style.setProperty('--bg',v[0]);document.documentElement.style.setProperty('--green',v[1]);document.documentElement.style.setProperty('--green2',v[2]);localStorage.setItem('foodDiaryTheme',t);document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('selected',b.dataset.theme===t))}
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>showMainPage(b.dataset.page));$('openAllRecords').onclick=()=>showMainPage('records');$('recordSearch').oninput=()=>renderAllRecords();document.querySelectorAll('[data-record-filter]').forEach(b=>b.onclick=()=>{recordFilter=b.dataset.recordFilter;document.querySelectorAll('[data-record-filter]').forEach(x=>x.classList.toggle('selected',x===b));renderAllRecords()});$('calendarPrev').onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()-1);renderCalendar()};$('calendarNext').onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()+1);renderCalendar()};$('openBackupPage').onclick=openBackup;document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));
+
+$('prevDay').onclick=()=>{currentDate=shiftDate(currentDate,-1);renderDate()};$('nextDay').onclick=()=>{currentDate=shiftDate(currentDate,1);renderDate()};$('todayBtn').onclick=()=>{currentDate=localDate(new Date());renderDate()};document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));$('addMealBtn').onclick=()=>openMeal();$('addSnackBtn').onclick=()=>openMeal(null,'點心／飲品');$('quickMeal').onclick=()=>{showMainPage('home');setTab('food');openMeal()};$('addEventBtn').onclick=()=>openEvent();$('quickEvent').onclick=()=>{showMainPage('home');setTab('events');openEvent()};$('settingsBtn').onclick=openSettings;
+try{applyTheme(localStorage.getItem('food-diary-theme')||'森林绿')}catch(e){applyTheme('森林绿')}$('buildReport').onclick=buildReport;
+(async()=>{try{if(!('indexedDB'in window))throw Error('no indexedDB');db=await openDB();applyTheme(localStorage.getItem('foodDiaryTheme')||'forest');$('rangeEnd').value=currentDate;$('rangeStart').value=shiftDate(currentDate,-6);renderDate()}catch(e){document.querySelector('.app').insertAdjacentHTML('afterbegin','<div class="card" style="border-color:#d99">此瀏覽器無法啟用本機資料儲存。請改用 Safari 或 Chrome 開啟，並避免使用無痕模式。</div>')}})();
+})();
+</script></body></html>
