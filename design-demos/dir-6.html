@@ -91,6 +91,13 @@ main{flex:1}
 .cell.sel .dot{background:#fff}
 .calsum{margin-top:14px;font-size:13.5px;color:#4b5563;line-height:1.9}
 .calsum b{color:#0f766e}
+.calday{margin-top:16px;padding-top:14px;border-top:1px solid #ecebe7}
+.calday .dt{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.calday .dt .d{font-size:16px;font-weight:700;color:#1a202c}
+.calday .dt .n{font-size:12.5px;color:#7c8894}
+.calday .quick{display:flex;gap:8px;margin:10px 0 4px}
+.calday .quick input{flex:1;border:1px solid #e3e6e1;border-radius:9px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;min-width:0}
+.calday .quick button{flex:0 0 auto;min-height:44px;padding:0 18px}
 
 /* 統計 */
 .rangerow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
@@ -215,6 +222,7 @@ main{flex:1}
       <div class="wd"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
       <div class="grid" id="calGrid"></div>
       <div class="calsum" id="calSum"></div>
+      <div class="calday" id="calDay"></div>
     </section>
 
     <!-- 統計 -->
@@ -283,16 +291,19 @@ main{flex:1}
     <!-- 設定 -->
     <section class="view" id="v-settings">
       <button class="setbtn" id="exportBtn">匯出備份 <span class="k">JSON</span></button>
-      <button class="setbtn" id="importBtn">匯入備份 <span class="k">合併資料</span></button>
-      <input type="file" id="importInput" accept="application/json" hidden>
+      <label class="setbtn" id="importBtn" for="importInput">匯入備份 <span class="k">合併資料</span></label>
+      <input type="file" id="importInput" accept="application/json,.json" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;opacity:0">
+      <button class="setbtn" id="copyBtn">複製備份文字 <span class="k">匯出失敗時用</span></button>
       <button class="setbtn" id="storageBtn">本機儲存空間 <span class="k" id="storageLine">查看</span></button>
       <button class="setbtn" id="demoBtn">載入範例資料 <span class="k">測試用</span></button>
       <button class="setbtn dangerbtn" id="clearBtn">清空所有紀錄 <span class="k">不可復原</span></button>
       <div class="info">
         資料只存在這台裝置的瀏覽器裡（IndexedDB），不會上傳。<br>
-        換裝置、換網址、清瀏覽器資料都會看不到舊紀錄，所以請定期用「匯出備份」。<br><br>
-        目前版本：v0.1 工程版（介面為中性樣式，視覺方向尚未定案）
+        換裝置、換網址、清瀏覽器資料、或長時間（超過一週）沒開，都可能看不到舊紀錄，所以請定期「匯出備份」。<br>
+        <span id="backupLine">還沒有備份紀錄</span><br><br>
+        目前版本：v0.2（日曆可就地查看與修改）
       </div>
+
     </section>
   </main>
 </div>
@@ -383,7 +394,7 @@ function renderToday(){
                    .sort(function(a,b){ return a.time.localeCompare(b.time); });
   var wrap = $("#entryList");
   if(!list.length){
-    wrap.innerHTML = '<div class="empty">這天還沒有紀錄。<br>在上面打一句話就能開始。</div>';
+    wrap.innerHTML = '<div class="empty">這天還沒有紀錄。<br>在上面打一句話就能開始；用 ‹ › 或到日曆頁點日期可以看別天。</div>';
     return;
   }
   var html="";
@@ -506,11 +517,11 @@ async function removeEntry(id){
   await dbDel(id);
   entries = entries.filter(function(x){ return x.id!==id; });
   lastDeleted = e;
-  renderToday(); renderFreq();
+  renderAll();
   toast("已刪除一筆", "復原", async function(){
     await dbPut(lastDeleted);
     entries.push(lastDeleted);
-    renderToday(); renderFreq();
+    renderAll();
     toast("已復原");
   });
 }
@@ -541,7 +552,45 @@ function renderCalendar(){
   var uniq = {};
   inMonth.forEach(function(e){ uniq[e.date]=1; });
   $("#calSum").innerHTML = "本月已記 <b>"+Object.keys(uniq).length+"</b> 天，共 <b>"+days+"</b> 天；"+
-    "紀錄 <b>"+inMonth.length+"</b> 筆。<br><span style='color:#98a2ae;font-size:12.5px'>點日期可跳到那天補記。</span>";
+    "紀錄 <b>"+inMonth.length+"</b> 筆。<br><span style='color:#98a2ae;font-size:12.5px'>點日期，下方直接顯示那天的紀錄，可就地修改。</span>";
+  renderCalDay();
+}
+
+function renderCalDay(){
+  var wrap = $("#calDay"); if(!wrap) return;
+  var list = entries.filter(function(e){ return e.date===selectedDate; })
+                    .sort(function(a,b){ return a.time.localeCompare(b.time); });
+  var d = parseYmd(selectedDate);
+  var head = '<div class="dt"><span class="d">'+(d.getMonth()+1)+' 月 '+d.getDate()+' 日</span>'+
+             '<span class="n">星期'+"日一二三四五六"[d.getDay()]+'・'+(list.length? list.length+' 筆':'尚無紀錄')+'</span></div>';
+  var body = "";
+  if(list.length){
+    MEALS.forEach(function(m){
+      var g = list.filter(function(e){ return e.meal===m; });
+      if(!g.length) return;
+      body += '<div class="mealgroup"><div class="gtitle">'+m+'</div>'+g.map(cardHTML).join("")+'</div>';
+    });
+    var other = list.filter(function(e){ return MEALS.indexOf(e.meal)<0; });
+    if(other.length) body += '<div class="mealgroup"><div class="gtitle">其他</div>'+other.map(cardHTML).join("")+'</div>';
+  } else {
+    body = '<div class="empty">這天還沒有紀錄。在下面打一句話就能補記。</div>';
+  }
+  wrap.innerHTML = head + body +
+    '<div class="quick"><input id="calQuick" placeholder="補記這一天吃了什麼"><button class="primary" id="calAdd">記錄</button></div>';
+  $("#calAdd").onclick = function(){ addEntryTo(selectedDate); };
+}
+
+async function addEntryTo(date){
+  var txt = ($("#calQuick").value || "").trim();
+  if(!txt){ toast("先打一句話"); return; }
+  var t = nowTime();
+  var e = {id:uid(), date:date, time:t, meal:mealFromTime(t), text:txt, items:[],
+           symptoms:[], note:"", photo:null, createdAt:new Date().toISOString()};
+  await dbPut(e);
+  entries.push(e);
+  $("#calQuick").value = "";
+  renderAll();
+  toast("已補記 "+shortDate(date)+" "+t);
 }
 
 /* ---------- 統計 ---------- */
@@ -691,32 +740,83 @@ function renderReport(){
 }
 
 /* ---------- 匯出 / 匯入 ---------- */
-function exportJSON(){
-  var data = {version:1, exportedAt:new Date().toISOString(), entries:entries};
-  var blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+function backupText(){
+  return JSON.stringify({version:1, exportedAt:new Date().toISOString(), entries:entries}, null, 2);
+}
+function backupName(){ return "食物紀錄-"+todayStr()+".json"; }
+function markBackup(){
+  try { localStorage.setItem("fl-last-backup", new Date().toISOString()); } catch(e){}
+  showBackupLine();
+}
+function showBackupLine(){
+  var el = $("#backupLine"); if(!el) return;
+  var v = null;
+  try { v = localStorage.getItem("fl-last-backup"); } catch(e){}
+  el.textContent = v ? ("上次備份：" + v.slice(0,10) + "（換裝置時用它匯入）") : "還沒有備份紀錄";
+}
+
+async function exportJSON(){
+  var text = backupText(), name = backupName();
+  // 手機優先：用系統分享（可存到「檔案」App 或傳給自己）
+  try {
+    if(window.File && navigator.canShare){
+      var file = new File([text], name, {type:"application/json"});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:"食物紀錄備份"});
+        markBackup(); toast("已交出備份檔"); return;
+      }
+    }
+  } catch(err){
+    if(err && err.name==="AbortError") return;   // 使用者取消，不算失敗
+  }
+  // 桌機／不支援分享：走一般下載
+  var blob = new Blob([text], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
   var a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "食物紀錄-"+todayStr()+".json";
+  a.href = url; a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  markBackup();
   toast("已匯出備份檔");
 }
 
+async function copyBackup(){
+  var text = backupText();
+  try {
+    await navigator.clipboard.writeText(text);
+    markBackup();
+    toast("備份內容已複製，貼到記事本或寄給自己即可");
+  } catch(err){
+    // 沒有剪貼簿權限時，退成「開一個新視窗讓你自己長按複製」
+    var w = window.open("", "_blank");
+    if(w){
+      w.document.write('<meta name="viewport" content="width=device-width,initial-scale=1"><pre style="white-space:pre-wrap;font:14px/1.6 -apple-system,sans-serif;padding:16px">'+text.replace(/</g,"&lt;")+'</pre>');
+      w.document.title = name;
+      markBackup();
+    } else {
+      alert("這個瀏覽器不給複製，請改用「匯出備份」。");
+    }
+  }
+}
+
 async function importJSON(file){
-  var text = await file.text();
+  var text;
+  try { text = await file.text(); }
+  catch(e){ alert("這個檔案讀不進來，換一個試試。"); return; }
   var data;
-  try { data = JSON.parse(text); } catch(e){ alert("檔案格式不對，無法匯入。"); return; }
+  try { data = JSON.parse(text); } catch(e){ alert("檔案格式不對（不是 JSON），無法匯入。"); return; }
   var list = data.entries || (Array.isArray(data) ? data : null);
-  if(!list){ alert("找不到 entries 欄位。"); return; }
-  var added=0;
+  if(!list){ alert("這個檔案裡找不到 entries 欄位。"); return; }
+  if(DEMO){ toast("示範模式不能匯入，請開正式網址"); return; }
+  var added = 0, skipped = 0;
   for(var i=0;i<list.length;i++){
     var e = list[i];
-    if(!e || !e.id || !e.date) continue;
-    await dbPut(e); added++;
+    if(!e || !e.id || !e.date){ skipped++; continue; }
+    try { await dbPut(e); added++; } catch(err){ skipped++; }
   }
   entries = await dbAll();
   renderAll();
-  toast("匯入 "+added+" 筆");
+  toast("匯入 "+added+" 筆" + (skipped ? "，略過 "+skipped+" 筆" : ""));
 }
 
 /* ---------- toast ---------- */
@@ -761,7 +861,7 @@ $("#freqRow").addEventListener("click", function(ev){
   ta.focus();
 });
 
-$("#entryList").addEventListener("click", async function(ev){
+async function handleCardAction(ev){
   var card = ev.target.closest(".card"); if(!card) return;
   var id = card.dataset.id;
   var act = ev.target.dataset.act;
@@ -782,10 +882,12 @@ $("#entryList").addEventListener("click", async function(ev){
     e.note = card.querySelector('[data-f="note"]').value.trim();
     e.symptoms = $$('.symtoggle button.sel', card).map(function(b){ return b.dataset.sym; });
     await dbPut(e);
-    renderToday();
+    renderAll();
     toast("已更新");
   }
-});
+}
+$("#entryList").addEventListener("click", handleCardAction);
+$("#calDay").addEventListener("click", handleCardAction);
 
 $("#tabbar").addEventListener("click", function(ev){
   var b = ev.target.closest("button[data-view]"); if(!b) return;
@@ -797,8 +899,7 @@ $("#calNext").onclick = function(){ calM++; if(calM>11){calM=0;calY++;} renderCa
 $("#calGrid").addEventListener("click", function(ev){
   var c = ev.target.closest(".cell[data-date]"); if(!c) return;
   selectedDate = c.dataset.date;
-  renderToday();
-  setView("today");
+  renderCalendar();
 });
 
 function syncRange(){
@@ -841,10 +942,13 @@ $("#repApply").onclick = function(){
 $("#printBtn").onclick = function(){ window.print(); };
 
 $("#exportBtn").onclick = exportJSON;
-$("#importBtn").onclick = function(){ $("#importInput").click(); };
+$("#copyBtn").onclick = copyBackup;
 $("#importInput").onchange = async function(ev){
   var f = ev.target.files && ev.target.files[0];
-  if(f) await importJSON(f);
+  if(f){
+    try { await importJSON(f); }
+    catch(err){ alert("匯入時出錯：" + (err && err.message ? err.message : "未知錯誤")); }
+  }
   ev.target.value="";
 };
 $("#storageBtn").onclick = async function(){
@@ -915,8 +1019,11 @@ function demoSeed(){
     } else {
       db = await openDB();
       entries = await dbAll();
+      // 請瀏覽器不要把資料清掉（Chrome/Android 有效；iOS 仍受系統規則限制）
+      try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
       $("#subline").textContent = entries.length ? ("共 " + entries.length + " 筆紀錄，全部存在這台裝置") : ("記錄吃什麼、什麼時候吃，一段期間整理成報告");
     }
+    showBackupLine();
     $("#fromDate").value = customFrom; $("#toDate").value = customTo;
     syncRange();
     renderAll();
