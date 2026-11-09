@@ -2,8 +2,7 @@
 
 每日食物紀錄 + 期間統計 + 就醫報告。單一 HTML 檔，部署在 GitHub Pages，資料存在使用者自己的瀏覽器。
 
-**線上版：https://lemon74088.github.io/food-log/**（手機直接用這個網址，加主畫面就是 App）
-設計方向試玩：https://lemon74088.github.io/food-log/design-demos/switch.html （D 手帳／E 雜誌／F 玻璃 三版即時切換）
+**線上版：  https://lemon74088.github.io/food-log/ （D 手帳／E 雜誌／F 玻璃 三版即時切換）
 
 > 這個 repo（`food-log`）就是正式版，只此一個網址。
 > `food-diary` 是另一個 repo（你自己的「我的食物日記」版本08），跟這裡的資料**完全不相通**，不要兩邊輪流記。
