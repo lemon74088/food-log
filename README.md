@@ -1,17 +1,22 @@
 # 食物紀錄（豆包版本）
 
-每日食物紀錄 + 期間統計 + 就醫報告。單一 HTML 檔，部署在 GitHub Pages，資料存在使用者自己的瀏覽器。
+每日食物紀錄 + 期間統計 + 就醫報告。純前端三個檔案（`index.html`＋`styles.css`＋`app.js`），部署在 GitHub Pages，資料存在使用者自己的瀏覽器。
 
-**線上版：  https://lemon74088.github.io/food-log/ （D 手帳／E 雜誌／F 玻璃 三版即時切換）
+**線上版：https://lemon74088.github.io/food-log/**（手機直接用這個網址，加入主畫面就是 App）
+設計方向試玩：https://lemon74088.github.io/food-log/design-demos/switch.html （D 手帳／E 雜誌／F 玻璃 三版即時切換）
 
 > 這個 repo（`food-log`）就是正式版，只此一個網址。
 > `food-diary` 是另一個 repo（你自己的「我的食物日記」版本08），跟這裡的資料**完全不相通**，不要兩邊輪流記。
 
 ## 目前版本
 
-v0.2（工程版）— 修好手機端的備份／還原，並把日曆改成「點日期 → 下方直接顯示當日紀錄、可就地修改」，不再跳頁。介面仍是中性樣式，視覺方向尚未定案。
+v0.3（介面改版版）— 暖奶油底 `#FBF3E6`＋餐次分色（早餐黃／午餐橘／點心薄荷／晚餐葡萄／宵夜靛）、大圓角卡片、Nunito 數字，並新增「小貓打卡」與「下載單檔案」。
 
-v0.2 修的三件事：
+- **資料庫沒換**：仍是 `foodlog-db` / `entries`，同一網址打開，v0.2 記的紀錄直接看得到，不需匯入。
+- **舊版保留**：v0.2 單檔版留在分支 `v0.2-single-file`，要回滾就切回那個分支重新部署。
+- **小貓圖已內嵌**：三張小貓頭像直接放進 `app.js`（data URI），所以 repo 只有三個檔案、沒有 `assets/`。
+
+## v0.2 修的三件事（已包含在 v0.3）
 
 1. **備份／還原在手機上按了沒反應**
    - 匯出：手機優先走系統分享（可存到「檔案」App 或傳給自己），桌機才走一般下載；另加「複製備份文字」按鈕當最後手段。
@@ -32,6 +37,8 @@ v0.2 修的三件事：
   - 沒有文字的照片紀錄不會被算進食物詞頻與多樣性
 - **症狀**：每筆可標脹氣／腹瀉／胃痛／疲倦／過敏／頭暈，報告可做「食物 → 症狀」對照
 - **編輯**：改時間、改餐別、改內容、加備註
+- **小貓打卡**：今天頁上方三隻小貓（橘子／芝麻／布丁），按「今天打卡」累積連續天數與點心；紀錄存在 `localStorage` 的 `fl-pets-v1`，跟食物資料分開，清空食物紀錄不會清寵物；寵物進度會跟著備份 JSON 的 `pets.days` 一起匯出／匯入
+- **下載單檔案**：設定頁可按「下載單檔案」把 HTML／CSS／JS／小貓圖打包成一個 `index.html`，方便放到任何靜態空間（打包出的檔案會自動隱藏這個按鈕）
 - **日曆**：一眼看出哪幾天有記、哪幾天缺
 - **統計**：最近 7／30 天、本月、上月、自訂區間
   - 記錄完整度（記了幾天、缺哪幾天）
@@ -77,7 +84,7 @@ v0.2 修的三件事：
 ### 方法 A：網頁操作（不用裝 git）
 
 1. 在 GitHub 建一個新的 repository（建議名稱 `food-log`，公開）
-2. 進入 repo → **Add file → Upload files** → 把 `index.html` 拖上去 → Commit
+2. 進入 repo → **Add file → Upload files** → 把 `index.html`、`styles.css`、`app.js` 三個檔案一起拖上去 → Commit
 3. **Settings → Pages** → Source 選 `Deploy from a branch` → Branch 選 `main`、資料夾選 `/ (root)` → Save
 4. 等 1–2 分鐘，網址會是：
 
@@ -110,10 +117,14 @@ git push -u origin main
 ## 檔案結構
 
 ```
-index.html        整個應用程式（HTML + CSS + JS，無外部依賴）
+index.html        畫面骨架（HTML）
+styles.css        樣式（暖奶油底、餐次分色、列印樣式）
+app.js            全部邏輯（IndexedDB、統計、報告、小貓打卡、單檔打包）；小貓圖已內嵌
 README.md         本說明
 design-demos/     六個外觀方向 + switch.html 三版即時切換（示範資料）
 preview/          手機尺寸截圖
 ```
 
-沒有 build 步驟、沒有 npm、沒有外部 CDN，改完存檔推上去就是新版。
+沒有 build 步驟、沒有 npm、沒有外部 CDN（唯一外部資源是字體 CSS），改完存檔推上去就是新版。
+
+字體：`index.html` 向 `https://miaoda.feishu.cn/fonts/css2` 要 Noto Sans TC。那個端點實測只回 Noto Sans TC 400，Nunito 不會載入，數字會退回系統字體；不影響功能。
