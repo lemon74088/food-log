@@ -176,11 +176,13 @@ async function addEntry(){
     photo: pendingPhoto || null, createdAt: new Date().toISOString()
   };
   await dbPut(e);
+  var beforeN = entries.length;
   entries.push(e);
   $("#quickText").value = "";
   clearPhoto();
   renderToday(); renderFreq();
   toast("已記錄 " + e.time + " " + e.meal);
+  checkEntryBadge(beforeN, entries.length);
 }
 
 function clearPhoto(){
@@ -287,10 +289,12 @@ async function addEntryTo(date){
   var e = {id:uid(), date:date, time:t, meal:mealFromTime(t), text:txt, items:[],
            symptoms:[], note:"", photo:null, createdAt:new Date().toISOString()};
   await dbPut(e);
+  var beforeCal = entries.length;
   entries.push(e);
   $("#calQuick").value = "";
   renderAll();
   toast("已補記 "+shortDate(date)+" "+t);
+  checkEntryBadge(beforeCal, entries.length);
 }
 
 /* ---------- 統計 ---------- */
@@ -371,6 +375,7 @@ function renderStats(){
     tl = "這期間沒有紀錄。";
   }
   $("#timeLine").textContent = tl;
+  renderBadgeWall();
 }
 
 function tile(k,v,s,tone){
@@ -703,12 +708,18 @@ function petCheckin(){
   petSay(c.name + "：" + c.lines[Math.floor(Math.random()*c.lines.length)]);
   toast(after > before ? ("打卡成功 · 連續 "+n+" 天 · 小貓更喜歡你了") : ("打卡成功 · 連續 "+n+" 天"));
   if(after > before){
-    setTimeout(function(){ badgeUnlock(n, after); }, 420);
+    setTimeout(function(){ badgeUnlock(BADGE_TITLES[Math.min(after,5)-1], "連續 " + n + " 天 · 親密度 " + after + "／5", "var(--tomato)"); }, 420);
   }
 }
 
-/* ---------- 成就徽章解鎖（打卡里程碑） ---------- */
+/* ---------- 成就徽章：定義 / 徽章牆 ---------- */
 var BADGE_TITLES = ["初次相遇","有點熟了","好朋友","很黏人","最強羈絆"];
+var BADGE_SETS = [
+  { key:"checkin", label:"打卡", unit:"天", color:"var(--tomato)", stages:[1,3,7,14,30], titles:BADGE_TITLES,
+    value:function(){ return petTotal(); } },
+  { key:"entries", label:"紀錄", unit:"筆", color:"var(--grape)", stages:[1,30,100,365], titles:["第一筆紀錄","三十筆的習慣","一百筆的紀錄","一整年"]
+    , value:function(){ return entries.length; } }
+];
 var badgeTimer = 0;
 
 function closeBadge(){
@@ -722,12 +733,12 @@ function closeBadge(){
   }, 260);
 }
 
-function badgeUnlock(streak, hearts){
+function badgeUnlock(title, sub, color){
   var el = $("#badgeFx");
   if(!el) return;
-  var idx = Math.max(0, Math.min(hearts, 5) - 1);
-  $("#badgeTitle").textContent = BADGE_TITLES[idx] || "成就解鎖";
-  $("#badgeSub").textContent = "連續 " + streak + " 天 · 親密度 " + hearts + "／5";
+  if(color) el.style.setProperty("--bx", color); else el.style.removeProperty("--bx");
+  $("#badgeTitle").textContent = title || "成就解鎖";
+  $("#badgeSub").textContent = sub || "";
   el.hidden = false;
   el.setAttribute("aria-hidden","false");
   el.classList.remove("on");
@@ -735,6 +746,44 @@ function badgeUnlock(streak, hearts){
   el.classList.add("on");
   clearTimeout(badgeTimer);
   badgeTimer = setTimeout(closeBadge, 3000);
+}
+
+function badgeList(){
+  var out = [];
+  BADGE_SETS.forEach(function(s){
+    var v = s.value();
+    s.stages.forEach(function(st, i){
+      out.push({ set:s.key, label:s.label, unit:s.unit, color:s.color,
+                 need:st, title:s.titles[i] || (s.label + " " + st + s.unit), got: v >= st });
+    });
+  });
+  return out;
+}
+
+function renderBadgeWall(){
+  var el = $("#badgeWall"); if(!el) return;
+  var list = badgeList();
+  var got = list.filter(function(b){ return b.got; }).length;
+  el.innerHTML = list.map(function(b){
+    return '<div class="bdg'+(b.got?" got":" lock")+'" style="--bc:'+b.color+'">'+
+      '<span class="bdghex"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 5 L89 27 V73 L50 95 L11 73 V27 Z"></path></svg><b>'+b.need+'</b></span>'+
+      '<span class="bdgt">'+b.title+'</span>'+
+      '<span class="bdgs">'+b.label+' '+b.need+' '+b.unit+'</span>'+
+    '</div>';
+  }).join("");
+  $("#badgeWallHint").textContent = "已解鎖 " + got + "／" + list.length + "　·　打卡累計 " + petTotal() + " 天、紀錄 " + entries.length + " 筆";
+}
+
+function checkEntryBadge(before, after){
+  if(after <= before) return;
+  var set = BADGE_SETS[1], hit = null;
+  set.stages.forEach(function(st, i){
+    if(after >= st && before < st){
+      hit = { title:set.titles[i], color:set.color,
+              sub:"累計 " + after + " 筆紀錄" + (st > 1 ? " · 達成 " + st + " 筆" : "") };
+    }
+  });
+  if(hit) setTimeout(function(){ badgeUnlock(hit.title, hit.sub, hit.color); }, 420);
 }
 
 window.__foodlogBadge = badgeUnlock;
