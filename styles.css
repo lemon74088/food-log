@@ -1245,3 +1245,70 @@ main{padding:16px 18px 26px}
   .card,.tile,.dayblk{break-inside:avoid}
   .dayblk h4::before{display:none}
 }
+
+/* ---------- 成就徽章解鎖（打卡里程碑） ---------- */
+.badgefx{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(120% 90% at 50% 32%, rgba(255,247,235,.62), rgba(44,33,24,.44) 62%, rgba(44,33,24,.58));
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  opacity:0;transition:opacity .26s ease}
+.badgefx[hidden]{display:none}
+.badgefx.on{opacity:1}
+.badgecard{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
+  padding:26px 30px 20px;border-radius:var(--r-xl);background:linear-gradient(180deg,var(--paper),var(--paper-2));
+  border:1px solid var(--line);box-shadow:var(--sh-3),0 0 0 6px rgba(255,253,248,.45);
+  transform:translateY(10px) scale(.96);opacity:0}
+.badgefx.on .badgecard{animation:badgeCardIn .46s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes badgeCardIn{to{transform:translateY(0) scale(1);opacity:1}}
+
+.badgewrap{position:relative;width:172px;height:172px;margin-bottom:6px}
+.badgehex,.badgerays,.badgestar{position:absolute;inset:0;width:100%;height:100%}
+.badgestar{inset:23.5%;width:53%;height:53%;bottom:auto;right:auto}
+.badgehex{animation:badgePop .5s .34s cubic-bezier(.34,1.4,.64,1) both}
+@keyframes badgePop{0%{transform:scale(.92)}60%{transform:scale(1.045)}100%{transform:scale(1)}}
+
+.hex-stroke{fill:none;stroke:var(--tomato);stroke-width:5.5;stroke-linejoin:round;
+  stroke-dasharray:100;stroke-dashoffset:100;
+  filter:drop-shadow(0 3px 8px rgba(240,96,58,.24))}
+.badgefx.on .hex-stroke{animation:hexDraw .62s .04s ease-out forwards}
+@keyframes hexDraw{to{stroke-dashoffset:0}}
+
+.hex-fill{fill:var(--tomato-soft);stroke:none;opacity:0}
+.badgefx.on .hex-fill{animation:hexFill .4s .5s ease-out forwards}
+@keyframes hexFill{to{opacity:1}}
+
+.badgerays{opacity:0}
+.badgefx.on .badgerays{animation:raysOut .52s .78s ease-out forwards}
+@keyframes raysOut{0%{opacity:.85;transform:scale(.5) rotate(-8deg)}70%{opacity:.55}100%{opacity:0;transform:scale(1.34) rotate(2deg)}}
+.badgerays rect{fill:var(--sun);opacity:.9}
+
+.badgestar{transform:scale(3) rotate(-60deg);opacity:0;transform-origin:50% 50%;
+  filter:drop-shadow(0 2px 6px rgba(231,161,26,.5))}
+.badgestar path{fill:var(--sun)}
+.badgestar .star-core{fill:#FFF6E0}
+.badgefx.on .badgestar{animation:starStamp .56s .62s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes starStamp{0%{transform:scale(3) rotate(-60deg);opacity:0}
+  55%{opacity:1}
+  100%{transform:scale(1) rotate(0deg);opacity:1}}
+
+.badgekicker{margin:0;font-size:12px;letter-spacing:.22em;color:var(--ink-3);text-transform:none;opacity:0}
+.badgetitle{margin:0;font-family:var(--font-num);font-weight:900;font-size:23px;line-height:1.25;color:var(--ink);opacity:0}
+.badgesub{margin:4px 0 0;font-size:13px;color:var(--ink-2);opacity:0}
+.badgetap{margin:12px 0 0;font-size:11px;letter-spacing:.08em;color:var(--ink-3);opacity:0}
+.badgefx.on .badgekicker{animation:txtUp .4s .92s ease-out forwards}
+.badgefx.on .badgetitle{animation:txtUp .44s 1.04s ease-out forwards}
+.badgefx.on .badgesub{animation:txtUp .44s 1.16s ease-out forwards}
+.badgefx.on .badgetap{animation:fadeIn .4s 1.5s ease-out forwards}
+@keyframes txtUp{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{to{opacity:1}}
+.badgefx.on .badgewrap{animation:badgeLand .5s 1.12s cubic-bezier(.34,1.4,.64,1)}
+@keyframes badgeLand{0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)}}
+
+@media (prefers-reduced-motion: reduce){
+  .badgefx,.badgefx.on{transition:none}
+  .badgefx.on .badgecard{animation:none;transform:none;opacity:1}
+  .badgefx.on .hex-stroke{animation:none;stroke-dashoffset:0}
+  .badgefx.on .hex-fill,.badgefx.on .badgestar,.badgefx.on .badgekicker,
+  .badgefx.on .badgetitle,.badgefx.on .badgesub,.badgefx.on .badgetap{animation:none;opacity:1;transform:none}
+  .badgefx.on .badgerays,.badgefx.on .badgewrap{animation:none}
+}
+@media (max-width:380px){.badgewrap{width:148px;height:148px}.badgecard{padding:22px 22px 18px}}

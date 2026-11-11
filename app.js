@@ -702,9 +702,46 @@ function petCheckin(){
   var c = CATS[Math.floor(Math.random()*CATS.length)];
   petSay(c.name + "：" + c.lines[Math.floor(Math.random()*c.lines.length)]);
   toast(after > before ? ("打卡成功 · 連續 "+n+" 天 · 小貓更喜歡你了") : ("打卡成功 · 連續 "+n+" 天"));
+  if(after > before){
+    setTimeout(function(){ badgeUnlock(n, after); }, 420);
+  }
 }
 
+/* ---------- 成就徽章解鎖（打卡里程碑） ---------- */
+var BADGE_TITLES = ["初次相遇","有點熟了","好朋友","很黏人","最強羈絆"];
+var badgeTimer = 0;
+
+function closeBadge(){
+  var el = $("#badgeFx");
+  if(!el || el.hidden) return;
+  clearTimeout(badgeTimer);
+  el.classList.remove("on");
+  setTimeout(function(){
+    el.hidden = true;
+    el.setAttribute("aria-hidden","true");
+  }, 260);
+}
+
+function badgeUnlock(streak, hearts){
+  var el = $("#badgeFx");
+  if(!el) return;
+  var idx = Math.max(0, Math.min(hearts, 5) - 1);
+  $("#badgeTitle").textContent = BADGE_TITLES[idx] || "成就解鎖";
+  $("#badgeSub").textContent = "連續 " + streak + " 天 · 親密度 " + hearts + "／5";
+  el.hidden = false;
+  el.setAttribute("aria-hidden","false");
+  el.classList.remove("on");
+  void el.offsetWidth;
+  el.classList.add("on");
+  clearTimeout(badgeTimer);
+  badgeTimer = setTimeout(closeBadge, 3000);
+}
+
+window.__foodlogBadge = badgeUnlock;
+
 /* ---------- 事件 ---------- */
+$("#badgeFx").addEventListener("click", closeBadge);
+document.addEventListener("keydown", function(ev){ if(ev.key === "Escape") closeBadge(); });
 $("#petBtn").onclick = petCheckin;
 $("#petRow").addEventListener("click", function(ev){
   var el = ev.target.closest(".cat"); if(!el) return;
