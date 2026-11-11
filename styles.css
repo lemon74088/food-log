@@ -1328,3 +1328,93 @@ main{padding:16px 18px 26px}
 .bdg.lock .bdgt{color:var(--ink-3);font-weight:500}
 .bdgs{font-size:10px;color:var(--ink-3);letter-spacing:.02em}
 @media (max-width:360px){.badgewall{gap:8px}.bdghex{width:46px;height:46px}.bdgt{font-size:11.5px}}
+/* ---------- 磨砂玻璃 / 懸浮層次 ---------- */
+:root{
+  --glass:rgba(255,253,248,.72);
+  --glass-2:rgba(255,253,248,.58);
+  --glass-line:rgba(255,255,255,.66);
+  --shadow-float:0 22px 44px -20px rgba(85,54,22,.42), 0 6px 14px -8px rgba(85,54,22,.18);
+}
+
+/* 應用外殼：磨砂玻璃，讓背後的暖色光斑透上來（列印時還原白底） */
+@media screen{
+  .app{
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(22px) saturate(1.35);
+    backdrop-filter:blur(22px) saturate(1.35);
+    border:1px solid var(--glass-line);
+    box-shadow:var(--shadow-float), inset 0 1px 0 rgba(255,255,255,.55);
+  }
+}
+
+/* 底部導覽：更透、更磨砂、浮起來 */
+.tabbar{
+  background:rgba(255,253,248,.66);
+  -webkit-backdrop-filter:blur(26px) saturate(1.6);
+  backdrop-filter:blur(26px) saturate(1.6);
+  border:1px solid var(--glass-line);
+  box-shadow:0 26px 46px -20px rgba(85,54,22,.55), 0 4px 10px -6px rgba(85,54,22,.2), inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* 卡片：懸浮感（桌機游標移上來會輕輕浮起） */
+@media (hover:hover) and (pointer:fine){
+  .tile,.bdg,.cat,.card{
+    transition:transform .22s cubic-bezier(.2,.9,.3,1.2), box-shadow .22s ease;
+  }
+  .tile:hover,.bdg:hover,.cat:hover{transform:translateY(-3px);box-shadow:var(--shadow-float)}
+  .card:hover{transform:translateY(-2px);box-shadow:0 16px 30px -18px rgba(85,54,22,.4)}
+}
+
+/* ---------- 邊框聚光（游標經過卡片群時） ---------- */
+.spotgrid{--spot-color:var(--tomato)}
+.spot{position:relative}
+.spot::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(180px circle at var(--x,50%) var(--y,50%), color-mix(in srgb, var(--spot-color) 16%, transparent), transparent 70%);
+  opacity:0;transition:opacity .3s ease;
+}
+.spot::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;padding:1px;
+  background:radial-gradient(150px circle at var(--x,50%) var(--y,50%), color-mix(in srgb, var(--spot-color) 78%, transparent), transparent 72%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .3s ease;
+}
+.spot.on::before{opacity:1}
+.spot.on:not(.tile)::after{opacity:1}
+
+/* 統計磚自己有裝飾用的 ::after（右上圓點），聚光只加內光暈＋邊框提亮，不動它的 ::after */
+.tile.spot::before{
+  background:radial-gradient(190px circle at var(--x,50%) var(--y,50%), color-mix(in srgb, var(--spot-color) 22%, transparent), transparent 72%);
+}
+.tile.spot.on{
+  border-color:color-mix(in srgb, var(--spot-color) 45%, #fff);
+  box-shadow:0 12px 26px -16px color-mix(in srgb, var(--spot-color) 55%, transparent), var(--sh-1);
+}
+
+/* ---------- 頁籤彈跳（點下去：壓扁 → 跳起 → 落地回彈） ---------- */
+.tabbar button.hop{animation:tabHop .62s cubic-bezier(.32,.72,.28,1) both}
+@keyframes tabHop{
+  0%{transform:translateY(0) scale(1,1)}
+  16%{transform:translateY(3px) scale(1.07,.86)}
+  44%{transform:translateY(-8px) scale(.93,1.09)}
+  64%{transform:translateY(1px) scale(1.09,.9)}
+  82%{transform:translateY(-2px) scale(.98,1.03)}
+  100%{transform:translateY(0) scale(1,1)}
+}
+.tabbar button.hop .ic{animation:tabIcHop .62s cubic-bezier(.32,.72,.28,1.4) both}
+@keyframes tabIcHop{
+  0%{transform:translateY(0) rotate(0)}
+  44%{transform:translateY(-3px) rotate(-7deg)}
+  70%{transform:translateY(1px) rotate(3deg)}
+  100%{transform:translateY(0) rotate(0)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .tabbar button.hop,.tabbar button.hop .ic{animation:none}
+  .spot::before,.spot::after{transition:none}
+}
+.t-mint{--spot-color:var(--mint)}
+.t-tomato{--spot-color:var(--tomato)}
+.t-grape{--spot-color:var(--grape)}
+.t-sun{--spot-color:var(--sun)}

@@ -379,7 +379,7 @@ function renderStats(){
 }
 
 function tile(k,v,s,tone){
-  return '<div class="tile t-'+tone+'"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>';
+  return '<div class="tile spot t-'+tone+'"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>';
 }
 function toMin(t){ return parseInt(t.slice(0,2),10)*60 + parseInt(t.slice(3,5),10); }
 function avgTime(list){
@@ -765,7 +765,7 @@ function renderBadgeWall(){
   var list = badgeList();
   var got = list.filter(function(b){ return b.got; }).length;
   el.innerHTML = list.map(function(b){
-    return '<div class="bdg'+(b.got?" got":" lock")+'" style="--bc:'+b.color+'">'+
+    return '<div class="bdg spot'+(b.got?" got":" lock")+'" style="--bc:'+b.color+';--spot-color:'+b.color+'">'+
       '<span class="bdghex"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 5 L89 27 V73 L50 95 L11 73 V27 Z"></path></svg><b>'+b.need+'</b></span>'+
       '<span class="bdgt">'+b.title+'</span>'+
       '<span class="bdgs">'+b.label+' '+b.need+' '+b.unit+'</span>'+
@@ -861,8 +861,42 @@ $("#calDay").addEventListener("click", handleCardAction);
 
 $("#tabbar").addEventListener("click", function(ev){
   var b = ev.target.closest("button[data-view]"); if(!b) return;
+  b.classList.remove("hop");
+  void b.offsetWidth;
+  b.classList.add("hop");
+  clearTimeout(b.__hopT);
+  b.__hopT = setTimeout(function(){ b.classList.remove("hop"); }, 700);
   setView(b.dataset.view);
 });
+
+/* 邊框聚光：游標在卡片群裡移動時，靠近游標的卡片邊框被照亮 */
+document.addEventListener("pointermove", function(ev){
+  if(ev.pointerType === "touch") return;
+  var h = ev.target.closest ? ev.target.closest(".spotgrid") : null;
+  if(!h) return;
+  $$(".spot", h).forEach(function(el){
+    var r = el.getBoundingClientRect();
+    el.style.setProperty("--x", (ev.clientX - r.left) + "px");
+    el.style.setProperty("--y", (ev.clientY - r.top) + "px");
+    el.classList.add("on");
+  });
+}, {passive:true});
+document.addEventListener("pointerleave", function(ev){
+  if(ev.pointerType === "touch") return;
+  $$(".spot").forEach(function(el){ el.classList.remove("on"); });
+}, true);
+document.addEventListener("pointerdown", function(ev){
+  if(ev.pointerType !== "touch") return;
+  var h = ev.target.closest ? ev.target.closest(".spotgrid") : null;
+  if(!h) return;
+  $$(".spot", h).forEach(function(el){
+    var r = el.getBoundingClientRect();
+    el.style.setProperty("--x", (ev.clientX - r.left) + "px");
+    el.style.setProperty("--y", (ev.clientY - r.top) + "px");
+    el.classList.add("on");
+  });
+  setTimeout(function(){ $$(".spot", h).forEach(function(el){ el.classList.remove("on"); }); }, 700);
+}, {passive:true});
 
 $("#calPrev").onclick = function(){ calM--; if(calM<0){calM=11;calY--;} renderCalendar(); };
 $("#calNext").onclick = function(){ calM++; if(calM>11){calM=0;calY++;} renderCalendar(); };
