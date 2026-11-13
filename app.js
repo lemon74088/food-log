@@ -447,6 +447,356 @@ function renderReport(){
   $("#reportSheet").innerHTML = head + sum + body;
 }
 
+/* ---------- 下載 PDF：純前端自繪 A4 分頁，不靠列印對話框 ---------- */
+var PDF_W = 1240, PDF_H = 1754, PDF_M = 96, PDF_CW = PDF_W - PDF_M * 2;
+var PDF_INK = "#3A2E24", PDF_DIM = "#8C7A66", PDF_ACCENT = "#C7492B", PDF_BG = "#FFFDF8";
+
+function pdfFont(size, weight){
+  return (weight || 600) + " " + size + 'px "Noto Sans TC","PingFang TC","Microsoft JhengHei","Helvetica Neue",Arial,sans-serif';
+}
+function pdfRound(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+async function buildReportPdf(){
+  var b = rangeBounds();
+  if(b.from > b.to){ var t = b.from; b.from = b.to; b.to = t; }
+  var list = entries.filter(function(e){ return e.date >= b.from && e.date <= b.to; })
+                    .sort(function(a,c){ return (a.date + a.time).localeCompare(c.date + c.time); });
+  var showTime = $("#optTime").checked, showPhoto = $("#optPhoto").checked,
+      showSym = $("#optSym").checked, showNote = $("#optNote").checked;
+  var days = diffDays(b.from, b.to) + 1;
+  var recSet = {}, symCount = 0;
+  list.forEach(function(e){
+    recSet[e.date] = 1;
+    if(e.symptoms && e.symptoms.length) symCount++;
+  });
+
+  try { if(document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
+
+  var cvs = document.createElement("canvas");
+  cvs.width = PDF_W; cvs.height = PDF_H;
+  var ctx = cvs.getContext("2d");
+  var pages = [], y = PDF_M;
+
+  function reset(){
+    ctx.fillStyle = PDF_BG; ctx.fillRect(0, 0, PDF_W, PDF_H);
+    y = PDF_M;
+    /* 續頁頁首：讓翻頁後仍有報告身分與頁碼 */
+    if(pages.length){
+      ctx.font = pdfFont(15, 700); ctx.fillStyle = PDF_DIM;
+      ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.fillText("FOOD LOG · 期間報告（續）", PDF_M, PDF_M + 2);
+      ctx.font = pdfFont(16, 600); ctx.fillStyle = PDF_DIM;
+      ctx.textAlign = "right";
+      ctx.fillText("第 " + (pages.length + 1) + " 頁", PDF_W - PDF_M, PDF_M + 2);
+      ctx.textAlign = "left";
+      y = PDF_M + 32;
+      ctx.strokeStyle = "rgba(58,46,36,.10)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(PDF_M, y); ctx.lineTo(PDF_W - PDF_M, y); ctx.stroke();
+      y += 26;
+    }
+  }
+  function flush(){
+    pages.push(cvs.toDataURL("image/jpeg", 0.84));
+    reset();
+  }
+  function need(h){
+    if(y + h > PDF_H - PDF_M - 46){ flush(); return true; }
+    return false;
+  }
+  function text(str, x, size, weight, color, maxW){
+    ctx.font = pdfFont(size, weight);
+    ctx.fillStyle = color || PDF_INK;
+    ctx.textAlign = "left"; ctx.textBaseline = "top";
+    var lines = wrap(str, maxW || PDF_CW);
+    lines.forEach(function(ln){
+      need(size * 1.55);
+      ctx.fillText(ln, x, y);
+      y += size * 1.55;
+    });
+  }
+  function wrap(str, maxW){
+    var out = [], cur = "";
+    str = String(str == null ? "" : str);
+    for(var i = 0; i < str.length; i++){
+      var ch = str[i];
+      if(ch === "\n"){ out.push(cur); cur = ""; continue; }
+      if(ctx.measureText(cur + ch).width > maxW && cur){ out.push(cur); cur = ch; }
+      else cur += ch;
+    }
+    if(cur) out.push(cur);
+    return out.length ? out : [""];
+  }
+
+  reset();
+
+  /* 頁首 */
+  ctx.fillStyle = PDF_ACCENT;
+  pdfRound(ctx, PDF_M, PDF_M + 4, 58, 58, 18);
+  ctx.fill();
+  ctx.fillStyle = "#FFFDF8"; ctx.font = pdfFont(30, 800); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("食", PDF_M + 29, PDF_M + 34);
+  ctx.textAlign = "left"; ctx.textBaseline = "top";
+  ctx.fillStyle = PDF_DIM; ctx.font = pdfFont(16, 700);
+  ctx.fillText("FOOD LOG · 期間報告", PDF_M + 76, PDF_M + 8);
+  ctx.fillStyle = PDF_INK; ctx.font = pdfFont(40, 800);
+  ctx.fillText("食物紀錄期間報告", PDF_M + 76, PDF_M + 32);
+
+  y = PDF_M + 100;
+  ctx.strokeStyle = "rgba(58,46,36,.14)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(PDF_M, y); ctx.lineTo(PDF_W - PDF_M, y); ctx.stroke();
+  y += 26;
+
+  ctx.font = pdfFont(24, 700); ctx.fillStyle = PDF_INK;
+  ctx.fillText(niceDate(b.from).replace(/ \S+$/, "") + " — " + niceDate(b.to).replace(/ \S+$/, ""), PDF_M, y);
+  y += 42;
+  ctx.font = pdfFont(19, 500); ctx.fillStyle = PDF_DIM;
+  ctx.fillText("共 " + days + " 天／" + list.length + " 筆　產生日期 " + todayStr(), PDF_M, y);
+  y += 52;
+
+  /* 摘要 */
+  var sumLines = [
+    "期間 " + days + " 天，有紀錄 " + Object.keys(recSet).length + " 天，共 " + list.length + " 筆；有症狀的餐 " + symCount + " 筆。"
+  ];
+  if(!list.length) sumLines.push("這段期間沒有紀錄。");
+
+  ctx.font = pdfFont(21, 600);
+  var sumWrapped = [];
+  sumLines.forEach(function(s){ sumWrapped = sumWrapped.concat(wrap(s, PDF_CW - 56)); });
+  var sumH = sumWrapped.length * 33 + 40;
+  ctx.fillStyle = "#F7F0E3";
+  pdfRound(ctx, PDF_M, y, PDF_CW, sumH, 22); ctx.fill();
+  y += 20;
+  sumWrapped.forEach(function(ln){
+    ctx.font = pdfFont(21, 600); ctx.fillStyle = PDF_INK;
+    ctx.fillText(ln, PDF_M + 28, y);
+    y += 33;
+  });
+  y += 30;
+
+  /* 逐日明細 */
+  var byDate = {};
+  list.forEach(function(e){ (byDate[e.date] = byDate[e.date] || []).push(e); });
+
+  var photoImgs = {};
+  if(showPhoto){
+    await Promise.all(list.filter(function(e){ return e.photo; }).map(function(e){
+      return new Promise(function(res){
+        var im = new Image();
+        im.onload = function(){ photoImgs[e.id] = im; res(); };
+        im.onerror = function(){ res(); };
+        im.src = e.photo;
+      });
+    }));
+  }
+
+  Object.keys(byDate).sort().forEach(function(d){
+    var es = byDate[d].sort(function(a,c){ return a.time.localeCompare(c.time); });
+    need(160);   /* 日期標題不與第一筆分頁 */
+    ctx.font = pdfFont(26, 800); ctx.fillStyle = PDF_INK;
+    ctx.fillText(niceDate(d), PDF_M, y + 6);
+    var dw = ctx.measureText(niceDate(d)).width;
+    ctx.font = pdfFont(17, 600); ctx.fillStyle = PDF_DIM;
+    ctx.fillText(es.length + " 筆", PDF_M + dw + 16, y + 14);
+    y += 46;
+    ctx.strokeStyle = "rgba(58,46,36,.10)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(PDF_M, y); ctx.lineTo(PDF_W - PDF_M, y); ctx.stroke();
+    y += 22;
+
+    es.forEach(function(e){
+      need(70);
+      var tx = PDF_M;
+      if(showTime){
+        ctx.font = pdfFont(21, 700); ctx.fillStyle = PDF_ACCENT;
+        ctx.fillText(e.time, PDF_M, y);
+        tx = PDF_M + 78;
+      }
+      /* 餐別標籤 */
+      ctx.font = pdfFont(17, 700);
+      var mw = ctx.measureText(e.meal).width + 24;
+      ctx.fillStyle = "rgba(199,73,43,.10)";
+      pdfRound(ctx, tx, y - 2, mw, 32, 16); ctx.fill();
+      ctx.fillStyle = PDF_ACCENT;
+      ctx.fillText(e.meal, tx + 12, y + 6);
+      var bodyX = tx + mw + 16;
+      var bodyW = PDF_W - PDF_M - bodyX;
+
+      var line = e.text ? e.text : "（只有照片，沒有文字）";
+      ctx.font = pdfFont(21, 600); ctx.fillStyle = e.text ? PDF_INK : PDF_DIM;
+      wrap(line, bodyW).forEach(function(ln){
+        need(33);
+        ctx.fillText(ln, bodyX, y);
+        y += 33;
+      });
+
+      if(showSym && e.symptoms && e.symptoms.length){
+        e.symptoms.forEach(function(s){
+          need(32);
+          ctx.font = pdfFont(16, 700);
+          var sw = ctx.measureText(s).width + 22;
+          ctx.fillStyle = "#EDE6FA";
+          pdfRound(ctx, bodyX, y + 2, sw, 27, 13); ctx.fill();
+          ctx.fillStyle = "#4B36AE";
+          ctx.fillText(s, bodyX + 11, y + 8);
+          bodyX += sw + 8;
+        });
+        y += 34;
+        bodyX = tx + mw + 16;
+      }
+
+      if(showNote && e.note){
+        ctx.font = pdfFont(17, 500); ctx.fillStyle = PDF_DIM;
+        wrap("備註：" + e.note, bodyW).forEach(function(ln){
+          need(27);
+          ctx.fillText(ln, tx + mw + 16, y);
+          y += 27;
+        });
+      }
+
+      var im = showPhoto && e.photo && photoImgs[e.id];
+      if(im){
+        var pw = 300, ph = Math.round(pw * (im.height / im.width));
+        if(ph > 230){ ph = 230; pw = Math.round(ph * (im.width / im.height)); }
+        need(ph + 20);
+        try {
+          ctx.save();
+          pdfRound(ctx, tx + mw + 16, y + 4, pw, ph, 14); ctx.clip();
+          ctx.drawImage(im, tx + mw + 16, y + 4, pw, ph);
+          ctx.restore();
+        } catch(err){}
+        y += ph + 18;
+      }
+      y += 14;
+    });
+    y += 10;
+  });
+
+  flush();
+
+  /* 頁尾 + 頁碼 */
+  var total = pages.length;
+  for(var i = 0; i < total; i++){
+    var tmp = document.createElement("canvas");
+    tmp.width = PDF_W; tmp.height = PDF_H;
+    var tctx = tmp.getContext("2d");
+    var img = new Image();
+    await new Promise(function(res){
+      img.onload = res; img.onerror = res; img.src = pages[i];
+    });
+    tctx.drawImage(img, 0, 0, PDF_W, PDF_H);
+    tctx.font = pdfFont(16, 500); tctx.fillStyle = PDF_DIM;
+    tctx.textAlign = "left"; tctx.textBaseline = "middle";
+    tctx.fillText("食物紀錄 · " + b.from + " — " + b.to, PDF_M, PDF_H - 54);
+    tctx.textAlign = "right";
+    tctx.fillText((i + 1) + " / " + total, PDF_W - PDF_M, PDF_H - 54);
+    pages[i] = tmp.toDataURL("image/jpeg", 0.84);
+  }
+
+  /* 打包成 PDF */
+  var imgs = pages.map(function(url){
+    var s = url.split(",")[1], bin = atob(s), arr = new Uint8Array(bin.length);
+    for(var k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+    return arr;
+  });
+  var bytes = packPdf(imgs, PDF_W, PDF_H);
+  return { bytes: bytes, pages: pages, from: b.from, to: b.to, count: list.length, pageCount: total };
+}
+
+function packPdf(jpegs, pxW, pxH){
+  var enc = new TextEncoder();
+  var parts = [], len = 0;
+  function put(x){
+    var b = (typeof x === "string") ? enc.encode(x) : x;
+    parts.push(b); len += b.length;
+  }
+  var ptW = 595.28, ptH = 841.89;
+  var n = jpegs.length;
+  var pageIds = [], contIds = [], imgIds = [];
+  for(var i = 0; i < n; i++){
+    pageIds.push(3 + i * 3);
+    contIds.push(4 + i * 3);
+    imgIds.push(5 + i * 3);
+  }
+  var totalObjs = 2 + n * 3;
+  var offsets = [];
+
+  put("%PDF-1.4\n");
+  offsets[1] = len;
+  put("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+  offsets[2] = len;
+  put("2 0 obj\n<< /Type /Pages /Count " + n + " /Kids [" + pageIds.map(function(id){ return id + " 0 R"; }).join(" ") + "] >>\nendobj\n");
+
+  for(var i = 0; i < n; i++){
+    var pid = pageIds[i], cid = contIds[i], iid = imgIds[i];
+    offsets[pid] = len;
+    put(pid + " 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + ptW + " " + ptH + "] /Resources << /XObject << /Im0 " + iid + " 0 R >> >> /Contents " + cid + " 0 R >>\nendobj\n");
+
+    /* 內容流：把整張頁面當一張圖鋪滿 A4 */
+    var content = "q " + ptW + " 0 0 " + ptH + " 0 0 cm /Im0 Do Q\n";
+    offsets[cid] = len;
+    put(cid + " 0 obj\n<< /Length " + content.length + " >>\nstream\n" + content + "endstream\nendobj\n");
+
+    offsets[iid] = len;
+    var jpg = jpegs[i];
+    put(iid + " 0 obj\n<< /Type /XObject /Subtype /Image /Width " + pxW + " /Height " + pxH +
+        " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + jpg.length + " >>\nstream\n");
+    put(jpg);
+    put("\nendstream\nendobj\n");
+  }
+
+  var xref = len;
+  var pad = function(v){ var s = String(v); while(s.length < 10) s = "0" + s; return s; };
+  var out = "xref\n0 " + (totalObjs + 1) + "\n0000000000 65535 f \n";
+  for(var o = 1; o <= totalObjs; o++) out += pad(offsets[o] || 0) + " 00000 n \n";
+  out += "trailer\n<< /Size " + (totalObjs + 1) + " /Root 1 0 R >>\nstartxref\n" + xref + "\n%%EOF\n";
+  put(out);
+
+  var buf = new Uint8Array(len), at = 0;
+  parts.forEach(function(p){ buf.set(p, at); at += p.length; });
+  return buf;
+}
+
+async function pdfReport(){
+  var r;
+  try {
+    toast("正在產生 PDF…");
+    r = await buildReportPdf();
+  } catch(err){
+    alert("PDF 產生失敗，改用列印對話框：" + (err && err.message ? err.message : "未知錯誤"));
+    window.print();
+    return;
+  }
+  var name = "食物紀錄_" + r.from.replace(/-/g, "") + "-" + r.to.replace(/-/g, "") + ".pdf";
+  var blob = new Blob([r.bytes], { type: "application/pdf" });
+
+  try {
+    if(navigator.canShare && window.File){
+      var file = new File([blob], name, { type: "application/pdf" });
+      if(navigator.canShare({ files: [file] })){
+        await navigator.share({ files: [file], title: "食物紀錄 PDF" });
+        toast("已交出 PDF（" + r.pageCount + " 頁）");
+        return;
+      }
+    }
+  } catch(e){}
+
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast("已下載 PDF（" + r.pageCount + " 頁，共 " + r.count + " 筆）");
+}
+window.__foodlogPdf = buildReportPdf;
+
 /* ---------- 匯出 / 匯入 ---------- */
 function backupText(){
   return JSON.stringify({version:1, exportedAt:new Date().toISOString(), entries:entries, pets:{days:petState.days}}, null, 2);
@@ -943,7 +1293,8 @@ $("#repApply").onclick = function(){
 ["optTime","optPhoto","optSym","optNote"].forEach(function(id){
   $("#"+id).onchange = renderReport;
 });
-$("#printBtn").onclick = function(){ window.print(); };
+$("#printBtn").onclick = pdfReport;
+$("#printRaw").onclick = function(ev){ ev.preventDefault(); window.print(); };
 
 $("#exportBtn").onclick = exportJSON;
 $("#copyBtn").onclick = copyBackup;
