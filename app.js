@@ -1522,9 +1522,7 @@ $("#clearBtn").onclick = async function(){
   entries=[]; renderAll(); toast("已清空");
 };
 
-/* ---------- 加到手機桌面（PWA） ---------- */
-var installEvent = null;
-
+/* ---------- 加到手機桌面（只給步驟說明，不主動彈出安裝） ---------- */
 function isStandaloneMode(){
   try { if(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return true; } catch(e){}
   return navigator.standalone === true;
@@ -1540,13 +1538,8 @@ function updateInstallRow(){
   var k = $("#installState"), hint = $("#installHint");
   if(!k) return;
   if(isStandaloneMode()){
-    k.textContent = "已安裝";
+    k.textContent = "已加入";
     if(hint) hint.textContent = "你現在就是用桌面圖示開啟，已經是 App 模式。";
-    return;
-  }
-  if(installEvent){
-    k.textContent = "一鍵安裝";
-    if(hint) hint.textContent = "這台裝置支援一鍵安裝，按一下會跳出系統安裝視窗。";
     return;
   }
   if(isIOS()){
@@ -1554,7 +1547,7 @@ function updateInstallRow(){
     if(hint) hint.textContent = "iPhone 要用 Safari 開，再從分享選單「加入主畫面」。";
   } else if(isAndroid()){
     k.textContent = "選單加入";
-    if(hint) hint.textContent = "Android 請用 Chrome／Edge 開，從右上選單「安裝應用程式」。";
+    if(hint) hint.textContent = "Android 請用 Chrome／Edge 開，從右上選單「加到主畫面」。";
   } else {
     k.textContent = "看步驟";
     if(hint) hint.textContent = "桌機可在網址列右側按安裝圖示；手機請用系統瀏覽器開。";
@@ -1589,9 +1582,8 @@ function openInstallSheet(){
   $("#instTitle").textContent = isIOS() ? "用 Safari 加到主畫面" : (isAndroid() ? "加到 Android 桌面" : "加到桌面");
   $("#instSub").textContent = isStandaloneMode()
     ? "你已經在 App 模式裡了。"
-    : "裝好之後就是獨立圖示，全螢幕、沒有網址列。";
+    : "照下面三步做，桌面就會多一個圖示；全程免費，不會多花錢。";
   $("#instSteps").innerHTML = installSteps();
-  $("#instTry").hidden = !installEvent;
   sheet.hidden = false;
   void sheet.offsetWidth;
   sheet.classList.add("on");
@@ -1605,32 +1597,11 @@ function closeInstallSheet(){
   setTimeout(function(){ sheet.hidden = true; }, 200);
 }
 
-$("#installBtn").onclick = async function(){
+$("#installBtn").onclick = function(){
   if(isStandaloneMode()){ toast("已經是用桌面圖示開啟"); return; }
-  if(installEvent){
-    try {
-      installEvent.prompt();
-      var choice = await installEvent.userChoice;
-      installEvent = null;
-      updateInstallRow();
-      if(choice && choice.outcome === "accepted") toast("已送出安裝");
-      return;
-    } catch(err){ /* 某些環境 prompt 會失敗，退回教學 */ }
-  }
   openInstallSheet();
 };
 $("#instClose").onclick = closeInstallSheet;
-$("#instTry").onclick = async function(){
-  if(!installEvent){ closeInstallSheet(); return; }
-  try {
-    installEvent.prompt();
-    await installEvent.userChoice;
-    installEvent = null;
-    closeInstallSheet();
-    updateInstallRow();
-    toast("已送出安裝");
-  } catch(err){ closeInstallSheet(); }
-};
 $("#instSheet").addEventListener("click", function(ev){
   if(ev.target === this) closeInstallSheet();
 });
@@ -1638,19 +1609,7 @@ document.addEventListener("keydown", function(ev){
   if(ev.key === "Escape" && !$("#instSheet").hidden) closeInstallSheet();
 });
 
-window.addEventListener("beforeinstallprompt", function(ev){
-  ev.preventDefault();
-  installEvent = ev;
-  updateInstallRow();
-});
-window.addEventListener("appinstalled", function(){
-  installEvent = null;
-  closeInstallSheet();
-  updateInstallRow();
-  toast("已加到桌面");
-});
-
-/* Service Worker：讓 Android 可安裝，並提供斷網時的基本快取 */
+/* Service Worker：只做離線快取，不會自己跳安裝視窗 */
 if("serviceWorker" in navigator && location.protocol !== "file:"){
   window.addEventListener("load", function(){
     navigator.serviceWorker.register("sw.js").catch(function(){});

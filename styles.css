@@ -1284,8 +1284,6 @@ main{padding:16px 18px 26px}
 }
 .instfoot{display:flex;align-items:center;gap:10px;margin-top:16px}
 .instfoot .ghost{flex:1}
-.instfoot .primary{flex:1}
-.instfoot .primary[hidden]{display:none}
 
 @media print{
   .instsheet{display:none}
