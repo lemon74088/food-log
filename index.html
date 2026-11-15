@@ -95,23 +95,48 @@
         <label class="sr-only" for="quickText">吃了什麼</label>
         <textarea id="quickText" rows="2" placeholder="吃了什麼？例如：蛋餅加豆漿"></textarea>
         <div class="crow">
-          <button class="chipbtn" id="photoBtn" type="button">
+          <button class="chipbtn" id="fileBtn" type="button">
+            <span class="ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7.2A1.6 1.6 0 0 1 5.6 5.6h2.9l1.6 2h9.3A1.6 1.6 0 0 1 19 9.2v7.2A1.6 1.6 0 0 1 17.4 18H5.6A1.6 1.6 0 0 1 4 16.4Z"></path>
+              </svg>
+            </span>
+            <span>檔案</span>
+          </button>
+          <button class="chipbtn shot" id="cameraBtn" type="button">
             <span class="ico" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4.5 8.5h3l1.4-2.2h6.2l1.4 2.2h3a1 1 0 0 1 1 1v8.2a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V9.5a1 1 0 0 1 1-1Z"></path>
                 <circle cx="12" cy="13.4" r="3.1"></circle>
               </svg>
             </span>
-            <span id="photoLabel">照片</span>
+            <span>拍照</span>
           </button>
-          <span class="hint" id="photoHint"></span>
+          <button class="chipbtn" id="photoBtn" type="button">
+            <span class="ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.6" y="4.6" width="16.8" height="14.8" rx="2.4"></rect>
+                <circle cx="8.8" cy="9.8" r="1.7"></circle>
+                <path d="M20.4 15.2 15.6 10.4 8 18"></path>
+              </svg>
+            </span>
+            <span id="photoLabel">相簿</span>
+          </button>
           <span class="spacer"></span>
           <button class="primary" id="addBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"></path></svg>
+            <svg class="picon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"></path></svg>
             <span>記錄</span>
           </button>
         </div>
-        <input type="file" id="photoInput" accept="image/*" hidden>
+        <div class="photostrip" id="photoStrip" hidden></div>
+        <div class="photofoot" id="photoFoot" hidden>
+          <span class="hint" id="photoHint"></span>
+          <button class="clearph" id="photoClear" type="button">全部清除</button>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" multiple hidden>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+        <input type="file" id="fileInput" accept="image/*,.heic,.heif" multiple hidden>
+        <input type="file" id="editPhotoInput" accept="image/*,.heic,.heif" multiple hidden>
       </div>
 
       <div class="freq" id="freqWrap" hidden>

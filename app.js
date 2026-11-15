@@ -53,8 +53,26 @@ function groupHTML(list, meal){
 }
 
 /* ---------- 資料層 ---------- */
-var DB_NAME="foodlog-db", STORE="entries", db=null, entries=[], selectedDate=todayStr(), pendingPhoto=null;
+var DB_NAME="foodlog-db", STORE="entries", db=null, entries=[], selectedDate=todayStr(), pendingPhotos=[], PHOTO_MAX=6;
+var editPhotos=[], editPhotoTarget=null;
 var DEMO = /[?&]demo=1/.test(location.search);
+
+/* 一筆紀錄的照片一律走 photos 陣列；舊資料只有單張 photo，讀取時自動相容 */
+function photosOf(e){
+  if(!e) return [];
+  if(e.photos && e.photos.length) return e.photos.slice(0, PHOTO_MAX);
+  return e.photo ? [e.photo] : [];
+}
+function applyPhotos(e, arr){
+  e.photos = (arr || []).slice(0, PHOTO_MAX);
+  e.photo = e.photos.length ? e.photos[0] : null;   /* 舊欄位保留，備份／舊版仍讀得到 */
+  return e;
+}
+function normalizeEntry(e){
+  var ps = (e.photos && e.photos.length) ? e.photos : (e.photo ? [e.photo] : []);
+  applyPhotos(e, ps);
+  return e;
+}
 
 function openDB(){
   return new Promise(function(res,rej){
@@ -111,7 +129,11 @@ function renderToday(){
 
 function cardHTML(e){
   var syms = (e.symptoms&&e.symptoms.length) ? '<div class="syms">'+e.symptoms.map(function(s){return '<span class="sym">'+esc(s)+'</span>';}).join("")+'</div>' : "";
-  var photo = e.photo ? '<img class="thumb'+(e.text?"":" big")+'" src="'+e.photo+'" alt="餐點照片">' : "";
+  var ps = photosOf(e);
+  var single = ps.length===1 ? '<img class="thumb'+(e.text?"":" big")+'" src="'+ps[0]+'" alt="餐點照片">' : "";
+  var grid = ps.length>1 ? '<div class="pgrid">'+ps.map(function(src,i){
+    return '<img src="'+src+'" alt="餐點照片 '+(i+1)+'">';
+  }).join("")+'</div>' : "";
   var note = e.note ? '<div class="note">'+esc(e.note)+'</div>' : "";
   var symOpts = SYMPTOMS.map(function(s){
     var on = (e.symptoms||[]).indexOf(s)>=0;
@@ -120,20 +142,23 @@ function cardHTML(e){
   var mealOpts = MEALS.map(function(m){ return '<option value="'+m+'"'+(m===e.meal?" selected":"")+'>'+m+'</option>'; }).join("");
 
   return '<article class="card" data-id="'+e.id+'" data-meal="'+esc(e.meal)+'">'+
-    '<div class="cardmain">'+
-      '<div class="meta"><span class="time">'+e.time+'</span><span class="meal">'+esc(e.meal)+'</span></div>'+
-      (e.text ? '<div class="text">'+esc(e.text)+'</div>' : '<div class="text muted">只有照片，還沒有文字</div>')+ syms + note +
-    '</div>'+ photo +
-    '<div class="cardfoot no-print">'+
-      '<button class="link" data-act="edit" type="button" aria-label="編輯這筆紀錄" title="編輯">'+ICON_EDIT+'</button>'+
-      '<button class="link danger" data-act="del" type="button" aria-label="刪除這筆紀錄" title="刪除">'+ICON_DEL+'</button>'+
-    '</div>'+
+    '<div class="cardtop">'+
+      '<div class="cardmain">'+
+        '<div class="meta"><span class="time">'+e.time+'</span><span class="meal">'+esc(e.meal)+'</span></div>'+
+        (e.text ? '<div class="text">'+esc(e.text)+'</div>' : '<div class="text muted">只有照片，還沒有文字</div>')+ syms + note +
+      '</div>'+ single +
+      '<div class="cardfoot no-print">'+
+        '<button class="link" data-act="edit" type="button" aria-label="編輯這筆紀錄" title="編輯">'+ICON_EDIT+'</button>'+
+        '<button class="link danger" data-act="del" type="button" aria-label="刪除這筆紀錄" title="刪除">'+ICON_DEL+'</button>'+
+      '</div>'+
+    '</div>'+ grid +
     '<div class="editbox">'+
       '<div class="editrow"><input type="time" data-f="time" value="'+e.time+'">'+
         '<select data-f="meal">'+mealOpts+'</select></div>'+
       '<div class="editrow"><textarea data-f="text" placeholder="吃了什麼">'+esc(e.text)+'</textarea></div>'+
       '<div class="symtoggle">'+symOpts+'</div>'+
       '<div class="editrow"><textarea data-f="note" placeholder="備註（選填）">'+esc(e.note||"")+'</textarea></div>'+
+      '<div class="editphotos" data-ephotos="1"></div>'+
       '<div class="crow"><button class="ghost" type="button" data-act="cancel">取消</button><span class="spacer"></span><button class="primary" type="button" data-act="save">儲存</button></div>'+
     '</div>'+
   '</article>';
@@ -168,48 +193,109 @@ function tokensOf(e){
 /* ---------- 新增 ---------- */
 async function addEntry(){
   var text = $("#quickText").value.trim();
-  if(!text && !pendingPhoto){ toast("先打一句話，或加一張照片"); return; }
+  if(!text && !pendingPhotos.length){ toast("先打一句話，或加一張照片"); return; }
   var t = nowTime();
-  var e = {
+  var e = applyPhotos({
     id: uid(), date: selectedDate, time: t, meal: mealFromTime(t),
     text: text, items: [], symptoms: [], note: "",
-    photo: pendingPhoto || null, createdAt: new Date().toISOString()
-  };
+    createdAt: new Date().toISOString()
+  }, pendingPhotos);
   await dbPut(e);
   var beforeN = entries.length;
   entries.push(e);
   $("#quickText").value = "";
-  clearPhoto();
+  clearPhotos();
   renderToday(); renderFreq();
-  toast("已記錄 " + e.time + " " + e.meal);
+  toast("已記錄 " + e.time + " " + e.meal + (e.photos.length>1 ? "（"+e.photos.length+" 張照片）" : ""));
   checkEntryBadge(beforeN, entries.length);
 }
 
-function clearPhoto(){
-  pendingPhoto=null;
-  $("#photoBtn").classList.remove("attached");
-  $("#photoLabel").textContent = "照片";
-  $("#photoHint").textContent = "";
+/* ---------- 照片：壓縮 / 待附清單 ---------- */
+function compressImage(file){
+  var max = 800;
+  function draw(src, w, h){
+    var scale = Math.min(1, max/Math.max(w,h));
+    var cw = Math.max(1, Math.round(w*scale)), ch = Math.max(1, Math.round(h*scale));
+    var c = document.createElement("canvas");
+    c.width = cw; c.height = ch;
+    c.getContext("2d").drawImage(src, 0, 0, cw, ch);
+    return c.toDataURL("image/jpeg", 0.72);
+  }
+  return new Promise(function(res, rej){
+    function fallback(){
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function(){
+        try { res(draw(img, img.naturalWidth, img.naturalHeight)); }
+        catch(err){ rej(new Error("decode")); }
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("decode")); };
+      img.src = url;
+    }
+    if(window.createImageBitmap){
+      createImageBitmap(file, {imageOrientation:"from-image"}).then(function(bmp){
+        try { var out = draw(bmp, bmp.width, bmp.height); if(bmp.close) bmp.close(); res(out); }
+        catch(err){ rej(new Error("decode")); }
+      }).catch(fallback);
+      return;
+    }
+    fallback();
+  });
 }
 
-function compressImage(file){
-  return new Promise(function(res,rej){
-    var img = new Image();
-    var url = URL.createObjectURL(file);
-    img.onload = function(){
-      var max = 800;
-      var w = img.naturalWidth, h = img.naturalHeight;
-      var scale = Math.min(1, max/Math.max(w,h));
-      var cw = Math.round(w*scale), ch = Math.round(h*scale);
-      var c = document.createElement("canvas");
-      c.width = cw; c.height = ch;
-      c.getContext("2d").drawImage(img,0,0,cw,ch);
-      URL.revokeObjectURL(url);
-      try { res(c.toDataURL("image/jpeg",0.72)); } catch(err){ rej(err); }
-    };
-    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("圖片讀取失敗")); };
-    img.src = url;
+async function addPhotosFromFiles(files, chipId){
+  var arr = Array.prototype.slice.call(files || []);
+  if(!arr.length) return;
+  var added = 0, failed = 0;
+  for(var i=0;i<arr.length;i++){
+    if(pendingPhotos.length >= PHOTO_MAX) break;
+    try {
+      pendingPhotos.push(await compressImage(arr[i]));
+      added++;
+    } catch(err){ failed++; }
+  }
+  if(added) markChip(chipId);
+  renderPhotoStrip();
+  if(failed) toast(failed + " 張讀不進來（HEIC 或格式不支援，改用「拍照」試試）");
+  else if(added && pendingPhotos.length >= PHOTO_MAX) toast("已附 " + pendingPhotos.length + " 張（上限 " + PHOTO_MAX + " 張）");
+}
+
+function markChip(id){
+  ["#photoBtn","#cameraBtn","#fileBtn"].forEach(function(x){
+    var b = $(x); if(b) b.classList.remove("attached");
   });
+  var b = id ? $(id) : null;
+  if(b) b.classList.add("attached");
+}
+
+function photoKB(list){
+  return list.reduce(function(sum, src){ return sum + Math.round(src.length/1024); }, 0);
+}
+
+function renderPhotoStrip(){
+  var strip = $("#photoStrip"), foot = $("#photoFoot");
+  if(!strip || !foot) return;
+  if(!pendingPhotos.length){
+    strip.hidden = true; strip.innerHTML = "";
+    foot.hidden = true;
+    $("#photoHint").textContent = "";
+    return;
+  }
+  strip.hidden = false;
+  strip.innerHTML = pendingPhotos.map(function(src, i){
+    return '<div class="pthumb"><img src="'+src+'" alt="待記錄照片 '+(i+1)+'">'+
+      '<button type="button" class="px" data-pdel="'+i+'" aria-label="移除第 '+(i+1)+' 張照片">✕</button></div>';
+  }).join("") + (pendingPhotos.length < PHOTO_MAX ?
+    '<button class="padd" type="button" id="photoMore" aria-label="再加照片">＋</button>' : "");
+  foot.hidden = false;
+  $("#photoHint").textContent = pendingPhotos.length + "/" + PHOTO_MAX + " 張 · 約 " + photoKB(pendingPhotos) + " KB";
+}
+
+function clearPhotos(){
+  pendingPhotos = [];
+  var lab = $("#photoLabel"); if(lab) lab.textContent = "相簿";
+  markChip(null);
+  renderPhotoStrip();
 }
 
 /* ---------- 刪除 / 復原 ---------- */
@@ -438,7 +524,15 @@ function renderReport(){
       var left = showTime ? '<span class="t">'+e.time+'</span>' : '';
       var sym = (showSym && e.symptoms && e.symptoms.length) ? '<div class="syms">'+e.symptoms.map(function(s){return '<span class="sym">'+esc(s)+'</span>';}).join("")+'</div>' : "";
       var note = (showNote && e.note) ? '<div class="note">'+esc(e.note)+'</div>' : "";
-      var photo = (showPhoto && e.photo) ? '<img class="rphoto" src="'+e.photo+'" alt="餐點照片">' : "";
+      var ps = showPhoto ? photosOf(e) : [];
+      var photo = "";
+      if(ps.length === 1){
+        photo = '<img class="rphoto" src="'+ps[0]+'" alt="餐點照片">';
+      } else if(ps.length > 1){
+        photo = '<div class="rphotos">'+ps.map(function(src,i){
+          return '<img class="rphoto" src="'+src+'" alt="餐點照片 '+(i+1)+'">';
+        }).join("")+'</div>';
+      }
       var line = e.text ? esc(e.text) : '<span style="color:#A08D78">（只有照片，沒有文字）</span>';
       return '<div class="mline">'+left+'<span class="m">'+e.meal+'</span><div class="b">'+line+sym+note+photo+'</div></div>';
     }).join("")+'</div>';
@@ -587,13 +681,15 @@ async function buildReportPdf(){
 
   var photoImgs = {};
   if(showPhoto){
-    await Promise.all(list.filter(function(e){ return e.photo; }).map(function(e){
-      return new Promise(function(res){
-        var im = new Image();
-        im.onload = function(){ photoImgs[e.id] = im; res(); };
-        im.onerror = function(){ res(); };
-        im.src = e.photo;
-      });
+    await Promise.all(list.filter(function(e){ return photosOf(e).length; }).map(function(e){
+      return Promise.all(photosOf(e).map(function(src){
+        return new Promise(function(res){
+          var im = new Image();
+          im.onload = function(){ (photoImgs[e.id] = photoImgs[e.id] || []).push(im); res(); };
+          im.onerror = function(){ res(); };
+          im.src = src;
+        });
+      }));
     }));
   }
 
@@ -660,18 +756,39 @@ async function buildReportPdf(){
         });
       }
 
-      var im = showPhoto && e.photo && photoImgs[e.id];
-      if(im){
+      var ims = (showPhoto && photoImgs[e.id]) ? photoImgs[e.id] : [];
+      var px0 = tx + mw + 16;
+      if(ims.length === 1){
+        var im = ims[0];
         var pw = 300, ph = Math.round(pw * (im.height / im.width));
         if(ph > 230){ ph = 230; pw = Math.round(ph * (im.width / im.height)); }
         need(ph + 20);
         try {
           ctx.save();
-          pdfRound(ctx, tx + mw + 16, y + 4, pw, ph, 14); ctx.clip();
-          ctx.drawImage(im, tx + mw + 16, y + 4, pw, ph);
+          pdfRound(ctx, px0, y + 4, pw, ph, 14); ctx.clip();
+          ctx.drawImage(im, px0, y + 4, pw, ph);
           ctx.restore();
         } catch(err){}
         y += ph + 18;
+      } else if(ims.length > 1){
+        /* 多張：3 欄方格，統一裁成正方形 */
+        var cell = 132, cgap = 8, perRow = 3, rows = Math.ceil(ims.length / perRow);
+        var gridH = rows * cell + (rows - 1) * cgap;
+        need(gridH + 20);
+        for(var gi = 0; gi < ims.length; gi++){
+          var gcol = gi % perRow, grow = Math.floor(gi / perRow);
+          var gx = px0 + gcol * (cell + cgap), gy = y + 4 + grow * (cell + cgap);
+          try {
+            var gim = ims[gi];
+            ctx.save();
+            pdfRound(ctx, gx, gy, cell, cell, 12); ctx.clip();
+            var gs = Math.max(cell / gim.width, cell / gim.height);
+            var gw = gim.width * gs, gh = gim.height * gs;
+            ctx.drawImage(gim, gx + (cell - gw) / 2, gy + (cell - gh) / 2, gw, gh);
+            ctx.restore();
+          } catch(err){}
+        }
+        y += gridH + 20;
       }
       y += 14;
     });
@@ -873,6 +990,7 @@ async function importJSON(file){
     try { await dbPut(e); added++; } catch(err){ skipped++; }
   }
   entries = await dbAll();
+  entries.forEach(normalizeEntry);
   if(data.pets && data.pets.days && typeof data.pets.days === "object"){
     Object.keys(data.pets.days).forEach(function(k){ petState.days[k] = 1; });
     savePets();
@@ -1158,19 +1276,57 @@ $("#addBtn").onclick = addEntry;
 $("#quickText").addEventListener("keydown", function(ev){
   if((ev.metaKey || ev.ctrlKey) && ev.key==="Enter"){ addEntry(); }
 });
+/* 三個入口：檔案 / 拍照（直開相機）/ 相簿 */
+$("#fileBtn").onclick = function(){ $("#fileInput").click(); };
+$("#cameraBtn").onclick = function(){ $("#cameraInput").click(); };
 $("#photoBtn").onclick = function(){ $("#photoInput").click(); };
-$("#photoInput").onchange = async function(ev){
-  var f = ev.target.files && ev.target.files[0];
-  if(!f) return;
-  try {
-    pendingPhoto = await compressImage(f);
-    $("#photoBtn").classList.add("attached");
-    $("#photoLabel").textContent = "換照片";
-    $("#photoHint").textContent = "已附 1 張（約 " + Math.round(pendingPhoto.length/1024) + " KB）";
-  } catch(err){ alert("這張圖讀不進來，換一張試試。"); }
+
+[["photoInput", "#photoBtn"], ["cameraInput", "#cameraBtn"], ["fileInput", "#fileBtn"]].forEach(function(pair){
+  var input = $("#"+pair[0]), chip = pair[1];
+  if(!input) return;
+  input.onchange = function(ev){
+    addPhotosFromFiles(ev.target.files, chip);
+    ev.target.value = "";
+  };
+});
+
+$("#photoStrip").addEventListener("click", function(ev){
+  var del = ev.target.closest("[data-pdel]");
+  if(del){
+    pendingPhotos.splice(parseInt(del.dataset.pdel, 10), 1);
+    if(!pendingPhotos.length) clearPhotos(); else renderPhotoStrip();
+    return;
+  }
+  if(ev.target.closest("#photoMore")) $("#photoInput").click();
+});
+$("#photoClear").onclick = clearPhotos;
+
+/* 編輯面板：換／加／刪照片 */
+function renderEditPhotos(card){
+  var box = card.querySelector(".editphotos"); if(!box) return;
+  if(!editPhotos.length){
+    box.innerHTML = '<span class="ephint">沒有照片</span>'+
+      '<button class="padd" type="button" data-padd2="1" aria-label="加照片">＋</button>';
+    return;
+  }
+  box.innerHTML = editPhotos.map(function(src, i){
+    return '<div class="pthumb"><img src="'+src+'" alt="照片 '+(i+1)+'">'+
+      '<button type="button" class="px" data-pdel2="'+i+'" aria-label="移除第 '+(i+1)+' 張">✕</button></div>';
+  }).join("") + (editPhotos.length < PHOTO_MAX ?
+    '<button class="padd" type="button" data-padd2="1" aria-label="加照片">＋</button>' : "");
+}
+
+$("#editPhotoInput").onchange = async function(ev){
+  var files = Array.prototype.slice.call(ev.target.files || []);
   ev.target.value = "";
+  if(!files.length || !editPhotoTarget) return;
+  for(var i=0;i<files.length;i++){
+    if(editPhotos.length >= PHOTO_MAX) break;
+    try { editPhotos.push(await compressImage(files[i])); }
+    catch(err){ toast("有照片讀不進來（HEIC 不支援），改用相簿裡的 JPG"); }
+  }
+  renderEditPhotos(editPhotoTarget);
 };
-$("#photoHint").addEventListener("click", clearPhoto);
 
 $("#freqRow").addEventListener("click", function(ev){
   var b = ev.target.closest(".fchip"); if(!b) return;
@@ -1186,9 +1342,31 @@ async function handleCardAction(ev){
   var symEl = ev.target.closest("[data-sym]");
   var act = actEl ? actEl.dataset.act : null;
 
+  var pdel = ev.target.closest("[data-pdel2]");
+  if(pdel){
+    editPhotos.splice(parseInt(pdel.dataset.pdel2, 10), 1);
+    renderEditPhotos(card);
+    return;
+  }
+  if(ev.target.closest("[data-padd2]")){
+    editPhotoTarget = card;
+    $("#editPhotoInput").click();
+    return;
+  }
+
   if(act==="del"){ removeEntry(id); return; }
-  if(act==="edit"){ card.querySelector(".editbox").classList.toggle("on"); return; }
-  if(act==="cancel"){ card.querySelector(".editbox").classList.remove("on"); return; }
+  if(act==="edit"){
+    var box = card.querySelector(".editbox");
+    box.classList.toggle("on");
+    if(box.classList.contains("on")){
+      var cur = entries.filter(function(x){ return x.id===id; })[0];
+      editPhotos = photosOf(cur);
+      editPhotoTarget = card;
+      renderEditPhotos(card);
+    }
+    return;
+  }
+  if(act==="cancel"){ card.querySelector(".editbox").classList.remove("on"); editPhotoTarget = null; return; }
   if(symEl){
     symEl.classList.toggle("sel");
     return;
@@ -1201,6 +1379,8 @@ async function handleCardAction(ev){
     e.text = card.querySelector('[data-f="text"]').value.trim() || e.text;
     e.note = card.querySelector('[data-f="note"]').value.trim();
     e.symptoms = $$('.symtoggle button.sel', card).map(function(b){ return b.dataset.sym; });
+    applyPhotos(e, editPhotos);
+    editPhotoTarget = null;
     await dbPut(e);
     renderAll();
     toast("已更新");
@@ -1330,7 +1510,7 @@ $("#demoBtn").onclick = async function(){
   for(var i=0;i<demo.length;i++){
     var x=demo[i];
     await dbPut({id:uid(), date:addDays(todayStr(),x.d), time:x.t, meal:x.m, text:x.x,
-      items:[], symptoms:x.s, note:x.n, photo:null, createdAt:new Date().toISOString()});
+      items:[], symptoms:x.s, note:x.n, photos:[], photo:null, createdAt:new Date().toISOString()});
   }
   entries = await dbAll(); renderAll();
   toast("已載入範例資料");
@@ -1361,7 +1541,7 @@ function demoSeed(){
   ];
   return rows.map(function(r,i){
     return { id:"demo-"+i, date:addDays(todayStr(),-r.d), time:r.t, meal:r.m, text:r.x,
-             items:[], symptoms:r.s.slice(), note:r.n, photo:null, createdAt:"" };
+             items:[], symptoms:r.s.slice(), note:r.n, photos:[], photo:null, createdAt:"" };
   });
 }
 
@@ -1385,6 +1565,7 @@ function demoSeed(){
       try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
       $("#subline").textContent = entries.length ? ("共 " + entries.length + " 筆紀錄，全部存在這台裝置") : ("記錄吃什麼、什麼時候吃，一段期間整理成報告");
     }
+    entries = entries.map(normalizeEntry);
     showBackupLine();
     $("#fromDate").value = customFrom; $("#toDate").value = customTo;
     syncRange();
