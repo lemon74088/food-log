@@ -6,6 +6,13 @@
 <meta name="theme-color" content="#FBF3E6">
 <meta name="creative-medium" content="interactive-prototype">
 <title>食物紀錄</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="食物紀錄">
 <link rel="preload" as="style" href="styles.css">
 <link rel="stylesheet" href="styles.css">
 <link rel="preconnect" href="https://miaoda.feishu.cn" crossorigin="anonymous">
@@ -249,6 +256,12 @@
         <p>紀錄只留在這台裝置，備份是你的安全網。</p>
       </div>
 
+      <button class="setbtn installbtn" id="installBtn">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.8" width="11" height="18.4" rx="3"></rect><path d="M12 8.4v5.2M9.4 11h5.2"></path><path d="M10 18.4h4"></path></svg></span>
+        <span class="lbl">加到手機桌面</span><span class="k" id="installState">看步驟</span>
+      </button>
+      <p class="installhint" id="installHint">用桌面圖示開啟：全螢幕、沒有網址列，相機也比較穩。</p>
+
       <button class="setbtn" id="exportBtn">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="m7.5 10.5 4.5 4.5 4.5-4.5"></path><path d="M5 18.5h14"></path></svg></span>
         <span class="lbl">匯出備份</span><span class="k">JSON</span>
@@ -283,7 +296,7 @@
         <p>資料只存在這台裝置的瀏覽器裡（IndexedDB），不會上傳。</p>
         <p>換裝置、換網址、清瀏覽器資料、或長時間（超過一週）沒開，都可能看不到舊紀錄，所以請定期「匯出備份」。</p>
         <p class="backupline" id="backupLine">還沒有備份紀錄</p>
-        <p class="ver">目前版本：v0.4（PDF 直接下載、磨砂玻璃介面）</p>
+        <p class="ver">目前版本：v0.6（三入口多照、PDF 直下、可加到桌面）</p>
       </div>
     </section>
   </main>
@@ -345,6 +358,20 @@
     <h2 class="badgetitle" id="badgeTitle">初次相遇</h2>
     <p class="badgesub" id="badgeSub">連續 1 天 · 親密度 1／5</p>
     <p class="badgetap">點一下關閉</p>
+  </div>
+</div>
+
+<!-- 加到桌面：手動步驟說明 -->
+<div class="instsheet" id="instSheet" hidden>
+  <div class="instwrap" role="dialog" aria-modal="true" aria-labelledby="instTitle">
+    <div class="instgrab" aria-hidden="true"></div>
+    <h3 id="instTitle">加到手機桌面</h3>
+    <p class="instsub" id="instSub">用桌面圖示開啟，就像一個 App。</p>
+    <ol class="inststeps" id="instSteps"></ol>
+    <div class="instfoot">
+      <button class="ghost" id="instClose" type="button">知道了</button>
+      <button class="primary" id="instTry" type="button">一鍵安裝</button>
+    </div>
   </div>
 </div>
 

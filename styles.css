@@ -1223,6 +1223,74 @@ main{padding:16px 18px 26px}
 .dangerbtn .ico{background:#FCE7E2;color:#C0392B}
 .dangerbtn .k{color:#C08A80;background:#FDEFEB}
 
+/* ---------- 加到手機桌面（PWA 安裝） ---------- */
+#installBtn{
+  background:linear-gradient(160deg,#FFF8F1,#FFF1E6);
+  border-color:#F7D6C3;
+}
+#installBtn .ico{background:#FFE7D8;color:#C7492B}
+#installBtn .k{color:#A65B3C;background:#FFEDE2}
+.installhint{
+  font-size:11.5px;
+  line-height:1.7;
+  color:#A08D78;
+  margin:-1px 2px 11px;
+  padding-left:2px;
+}
+
+.instsheet{
+  position:fixed;
+  inset:0;
+  z-index:90;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:0 10px calc(14px + env(safe-area-inset-bottom,0px));
+  background:rgba(44,33,24,.34);
+  -webkit-backdrop-filter:blur(3px);
+  backdrop-filter:blur(3px);
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.instsheet[hidden]{display:none}
+.instsheet.on{opacity:1}
+.instwrap{
+  width:100%;
+  max-width:460px;
+  background:var(--paper,#FFFDF8);
+  border:1px solid #F3E2CE;
+  border-radius:26px;
+  padding:10px 20px 18px;
+  box-shadow:0 26px 52px -22px rgba(92,61,28,.52);
+  transform:translateY(18px);
+  transition:transform .26s cubic-bezier(.2,.9,.3,1.15);
+}
+.instsheet.on .instwrap{transform:translateY(0)}
+.instgrab{width:42px;height:4px;border-radius:99px;background:#E7D5BF;margin:2px auto 12px}
+.instwrap h3{margin:0 0 4px;font-size:16.5px;font-weight:800;color:#3A2E24;letter-spacing:.02em}
+.instsub{margin:0 0 14px;font-size:12px;color:#8C7A66;line-height:1.7}
+.inststeps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+.inststeps li{display:flex;gap:10px;font-size:13px;line-height:1.65;color:#4A3B2C}
+.inststeps li b{font-weight:800;color:#C7492B}
+.inststeps .num{
+  flex:0 0 auto;
+  width:22px;height:22px;
+  border-radius:50%;
+  background:var(--tomato-soft,#FFE7DE);
+  color:#C7492B;
+  font-size:12px;font-weight:800;
+  display:grid;place-items:center;
+  margin-top:1px;
+}
+.instfoot{display:flex;align-items:center;gap:10px;margin-top:16px}
+.instfoot .ghost{flex:1}
+.instfoot .primary{flex:1}
+.instfoot .primary[hidden]{display:none}
+
+@media print{
+  .instsheet{display:none}
+}
+
 .info{
   margin-top:16px;
   padding:14px;
