@@ -374,6 +374,22 @@
   </div>
 </div>
 
+<!--
+  流量統計（GoatCounter）：只有你自己在後台看得到，訪客看不到任何數字。
+  用法：到 https://www.goatcounter.com 註冊，選一個 code（例如 foodlog-lemon），
+  然後把下面的 "" 換成那個 code（保留引號）。留空＝完全不載入，不會發出任何請求。
+-->
+<script>
+var GOATCOUNTER_CODE = "";
+if (GOATCOUNTER_CODE && location.protocol === "https:") {
+  var gc = document.createElement("script");
+  gc.async = true;
+  gc.src = "https://gc.zgo.at/count.js";
+  gc.setAttribute("data-goatcounter", "https://" + GOATCOUNTER_CODE + ".goatcounter.com/count");
+  document.head.appendChild(gc);
+}
+</script>
+
 <script src="app.js"></script>
 </body>
 </html>
